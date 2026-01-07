@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报平安系统 - 家庭通讯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 120, 255, 0.1);
+        }
+        
+        .main-content {
+            grid-column: 1;
+        }
+        
+        .sidebar {
+            grid-column: 2;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            grid-column: 1 / -1;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #0066ff;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #0066ff;
+            text-decoration: none;
+            font-size: 15px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            background: rgba(0, 120, 255, 0.05);
+            border: 1px solid rgba(0, 120, 255, 0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .nav-button:hover {
+            background: rgba(0, 120, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .status-card {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0eeff 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 120, 255, 0.2);
+        }
+        
+        .status-card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #0066ff;
+            border-bottom: 2px solid rgba(0, 120, 255, 0.2);
+            padding-bottom: 12px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid #0066ff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 15px;
+            word-break: break-all;
+            color: #333;
+        }
+        
+        .combo-section {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+        
+        .combo-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #ff6b35;
+            text-align: center;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+        
+        .hidden-sequence {
+            display: inline-block;
+            background: #f0f0f0;
+            color: transparent;
+            text-shadow: 0 0 8px rgba(0,0,0,0.5);
+            user-select: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            letter-spacing: 3px;
+        }
+        
+        .combo-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .combo-btn {
+            padding: 25px 10px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .combo-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: #ff6b35;
+        }
+        
+        .combo-btn.active {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            border-color: #ff6b35;
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+        
+        .combo-btn::after {
+            content: attr(data-key);
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .combo-sequence {
+            text-align: center;
+            margin: 25px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .sequence-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .sequence-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            letter-spacing: 10px;
+            color: #ff6b35;
+            font-weight: 600;
+            min-height: 50px;
+            padding: 10px;
+            background: rgba(255, 107, 53, 0.05);
+            border-radius: 8px;
+            border: 1px dashed rgba(255, 107, 53, 0.3);
+        }
+        
+        .verification-section {
+            background: linear-gradient(135deg, #f8f0ff 0%, #f0e0ff 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(142, 68, 173, 0.2);
+        }
+        
+        .verification-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #8e44ad;
+            text-align: center;
+        }
+        
+        .verification-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 2px solid rgba(142, 68, 173, 0.2);
+        }
+        
+        .verification-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px;
+            letter-spacing: 5px;
+            color: #8e44ad;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(142, 68, 173, 0.05);
+            border-radius: 10px;
+            border: 2px dashed rgba(142, 68, 173, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .verification-code.valid {
+            background: rgba(0, 200, 83, 0.1);
+            border-color: #00c853;
+            color: #00c853;
+            animation: validPulse 2s ease-in-out;
+        }
+        
+        @keyframes validPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .verification-hint {
+            font-size: 13px;
+            color: #666;
+            margin-top: 15px;
+        }
+        
+        .verify-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid rgba(0, 120, 255, 0.2);
+        }
+        
+        .verify-section h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #0066ff;
+            text-align: center;
+        }
+        
+        .verify-input {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .verify-input input {
+            flex: 1;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+        
+        .verify-input input:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.1);
+        }
+        
+        .verify-input button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .verify-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 102, 255, 0.3);
+        }
+        
+        .verification-result {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .verification-result.valid {
+            display: block;
+            background: rgba(0, 200, 83, 0.1);
+            color: #00c853;
+            border: 2px solid #00c853;
+        }
+        
+        .verification-result.invalid {
+            display: block;
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: 2px solid #ff4444;
+        }
+        
+        .city-section {
+            background: linear-gradient(135deg, #f0fff0 0%, #e0ffe0 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(0, 200, 83, 0.2);
+        }
+        
+        .city-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #00c853;
+            text-align: center;
+        }
+        
+        .city-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .city-btn {
+            padding: 15px 10px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .city-btn:hover {
+            border-color: #00c853;
+            transform: translateY(-2px);
+        }
+        
+        .city-btn.active {
+            background: linear-gradient(135deg, #00c853 0%, #00b347 100%);
+            border-color: #00c853;
+            color: white;
+        }
+        
+        .custom-city {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .custom-city input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-family: 'Microsoft JhengHei';
+            transition: all 0.3s;
+        }
+        
+        .custom-city input:focus {
+            outline: none;
+            border-color: #00c853;
+            box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.1);
+        }
+        
+        .custom-city button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .custom-city button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+        
+        .submit-section {
+            text-align: center;
+            margin: 40px 0 20px;
+        }
+        
+        .submit-btn {
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(255, 107, 53, 0.4);
+        }
+        
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 留言侧边栏样式 */
+        .messages-sidebar {
+            background: linear-gradient(135deg, #fff8f0 0%, #fff0e0 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .messages-sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #ff9800;
+            border-bottom: 2px solid rgba(255, 152, 0, 0.2);
+            padding-bottom: 12px;
+            text-align: center;
+        }
+        
+        .messages-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .messages-controls button {
+            flex: 1;
+            padding: 12px 15px;
+            background: white;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 8px;
+            color: #ff9800;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .messages-controls button:hover {
+            background: rgba(255, 152, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .messages-controls button.active {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            border-color: #ff9800;
+        }
+        
+        .messages-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .message-item {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff9800;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .message-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .message-city {
+            display: inline-block;
+            background: rgba(0, 200, 83, 0.1);
+            color: #00c853;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .message-content {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .message-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .message-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-correct {
+            color: #00c853;
+        }
+        
+        .status-incorrect {
+            color: #ff4444;
+        }
+        
+        .empty-messages {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        
+        /* 消息提示样式 */
+        .message {
+            padding: 18px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            grid-column: 1 / -1;
+        }
+        
+        .message.success {
+            display: block;
+            background: rgba(0, 200, 83, 0.1);
+            border: 2px solid #00c853;
+            color: #006400;
+        }
+        
+        .message.error {
+            display: block;
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            color: #8b0000;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 102, 255, 0.1);
+            border-top-color: #0066ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content, .sidebar {
+                grid-column: 1;
+            }
+            
+            .messages-sidebar {
+                position: static;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .combo-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .city-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .verify-input {
+                flex-direction: column;
+            }
+            
+            .verification-code {
+                font-size: 28px;
+                letter-spacing: 3px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-buttons">
+                <a href="index.html" class="nav-button">← 返回首页</a>
+                <button class="nav-button" id="refreshMessagesBtn">🔄 刷新留言</button>
+                <button class="nav-button" id="sendTestBtn">📤 发送测试</button>
+                <button class="nav-button" id="clearLocalBtn">🧹 清除本地数据</button>
+                <button class="nav-button" id="testApiBtn">🔧 测试API</button>
+            </div>
+            <h1>报平安确认系统</h1>
+            <p>请按照家庭暗号输入数字组合，完成后可查看家人留言</p>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="main-content">
+            <div class="status-card">
+                <h2>设备信息</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">设备指纹</div>
+                        <div class="info-value" id="deviceFingerprint">生成中...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">IP地址</div>
+                        <div class="info-value" id="ipAddress">获取中...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">当前时间</div>
+                        <div class="info-value" id="currentTime">--:--:--</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">网络状态</div>
+                        <div class="info-value" id="networkStatus">检查中...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">成员ID</div>
+                        <div class="info-value" id="memberId">--</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">最后报平安</div>
+                        <div class="info-value" id="lastCheckin">从未</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="combo-section">
+                <h2>数字组合输入</h2>
+                
+                <div class="instructions">
+                    请输入6位家庭暗号数字组合<br>
+                    <div class="hidden-sequence">3 1 4 3 1 6</div>
+                    （每次点击都会生成不同的校验码）
+                </div>
+                
+                <div class="combo-buttons">
+                    <button class="combo-btn" data-number="0" data-key="Q">0</button>
+                    <button class="combo-btn" data-number="1" data-key="W">1</button>
+                    <button class="combo-btn" data-number="2" data-key="E">2</button>
+                    <button class="combo-btn" data-number="3" data-key="R">3</button>
+                    <button class="combo-btn" data-number="4" data-key="A">4</button>
+                    <button class="combo-btn" data-number="5" data-key="S">5</button>
+                    <button class="combo-btn" data-number="6" data-key="D">6</button>
+                    <button class="combo-btn" data-number="7" data-key="F">7</button>
+                </div>
+                
+                <div class="combo-sequence">
+                    <div class="sequence-label">当前输入顺序</div>
+                    <div class="sequence-display" id="sequenceDisplay">请点击按钮开始</div>
+                </div>
+            </div>
+            
+            <div class="verification-section">
+                <h2>校验码生成</h2>
+                
+                <div class="verification-box">
+                    <div class="sequence-label">根据您的输入生成的校验码</div>
+                    <div class="verification-code" id="verificationCode">----</div>
+                    <div class="verification-hint">
+                        校验码基于输入顺序、时间和家庭密码自动生成<br>
+                        只有正确的输入顺序才能生成有效的校验码
+                    </div>
+                </div>
+                
+                <div class="verify-section">
+                    <h3>校验码验证</h3>
+                    <div class="verify-input">
+                        <input type="text" id="verifyInput" maxlength="4" placeholder="输入4位校验码" autocomplete="off">
+                        <button id="verifyButton">验证</button>
+                    </div>
+                    <div class="verification-result" id="verificationResult"></div>
+                    <div class="verification-hint">
+                        您可以复制上面的校验码来验证，只有正确顺序生成的校验码才能通过验证
+                    </div>
+                </div>
+            </div>
+            
+            <div class="city-section">
+                <h2>选择您所在城市</h2>
+                <div class="city-grid" id="cityButtons">
+                    <div class="city-btn" data-city="tpe" data-code="tpe">台北市</div>
+                    <div class="city-btn" data-city="ntpc" data-code="ntp">新北市</div>
+                    <div class="city-btn" data-city="tyc" data-code="tyc">桃园市</div>
+                    <div class="city-btn" data-city="hcc" data-code="hcc">新竹市</div>
+                    <div class="city-btn" data-city="hsc" data-code="hsc">新竹县</div>
+                    <div class="city-btn" data-city="ilc" data-code="ilc">宜兰县</div>
+                    <div class="city-btn" data-city="mkc" data-code="mkc">苗栗县</div>
+                    <div class="city-btn" data-city="sth" data-code="sth">南台湾</div>
+                </div>
+                <div class="custom-city">
+                    <input type="text" id="customCity" placeholder="输入其他城市名称..." autocomplete="off">
+                    <button id="addCustomCity">添加</button>
+                </div>
+            </div>
+            
+            <div class="submit-section">
+                <button class="submit-btn" id="submitBtn" disabled>发送报平安信息</button>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="messages-sidebar">
+                <h2>📨 家人留言</h2>
+                
+                <div class="messages-controls">
+                    <button class="active" data-filter="all">全部</button>
+                    <button data-filter="recent">最近24小时</button>
+                    <button data-filter="correct">正确顺序</button>
+                    <button data-filter="samecity">同城市</button>
+                </div>
+                
+                <div class="messages-list" id="messagesList">
+                    <div class="empty-messages">
+                        <div>📭</div>
+                        <div>暂无留言记录</div>
+                        <div style="font-size: 13px; margin-top: 10px;">发送报平安后可以查看家人留言</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div style="font-size: 18px; font-weight: 500; color: #333; margin-bottom: 10px;" id="loadingTitle">处理中...</div>
+        <div style="font-size: 14px; color: #666;" id="loadingMessage"></div>
+    </div>
+
+    <script>
+        class EnhancedCheckinSystem {
+            constructor() {
+                // 正确的顺序：314316（现在已从页面上隐藏）
+                this.correctSequence = ['3', '1', '4', '3', '1', '6'];
+                this.selectedSequence = [];
+                this.selectedCity = null;
+                this.deviceFingerprint = null;
+                this.ipAddress = null;
+                this.memberId = localStorage.getItem('memberId') || null;
+                this.familyCode = "OLDLIN314316";
+                this.apiBaseUrl = "https://report-safe.mgjack13.workers.dev";
+                this.messages = [];
+                this.currentFilter = 'all';
+                
+                // 台湾城市编码映射
+                this.cityCodes = {
+                    'tpe': '台北市',
+                    'ntpc': '新北市',
+                    'tyc': '桃园市',
+                    'hcc': '新竹市',
+                    'hsc': '新竹县',
+                    'ilc': '宜兰县',
+                    'mkc': '苗栗县',
+                    'sth': '南台湾'
+                };
+                
+                this.init();
+            }
+            
+            async init() {
+                this.setupEventListeners();
+                await this.loadDeviceInfo();
+                this.updateTime();
+                this.updateNetworkStatus();
+                this.loadCustomCities();
+                this.loadLastCheckinTime();
+                
+                const lastCity = localStorage.getItem('lastCity');
+                if (lastCity && this.cityCodes[lastCity]) {
+                    this.selectCity(lastCity);
+                }
+                
+                if (!this.memberId) {
+                    this.memberId = 'M' + Date.now().toString(36).substring(2, 6).toUpperCase();
+                    localStorage.setItem('memberId', this.memberId);
+                }
+                document.getElementById('memberId').textContent = this.memberId;
+                
+                setInterval(() => this.updateTime(), 1000);
+                
+                // 键盘快捷键支持
+                this.setupKeyboardShortcuts();
+                
+                // 尝试加载留言
+                setTimeout(() => this.loadMessages(), 1000);
+                
+                // 安全提示：隐藏顺序
+                this.showSecurityNotice();
+            }
+            
+            setupEventListeners() {
+                // 数字按钮点击
+                document.querySelectorAll('.combo-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const number = e.target.dataset.number;
+                        this.addToSequence(number);
+                    });
+                });
+                
+                // 城市按钮
+                document.querySelectorAll('.city-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const cityCode = e.target.dataset.city;
+                        this.selectCity(cityCode);
+                    });
+                });
+                
+                // 自定义城市
+                document.getElementById('addCustomCity').addEventListener('click', () => {
+                    this.addCustomCity();
+                });
+                
+                // 提交按钮
+                document.getElementById('submitBtn').addEventListener('click', () => {
+                    this.submitCheckin();
+                });
+                
+                // 验证按钮
+                document.getElementById('verifyButton').addEventListener('click', () => {
+                    this.verifyCode();
+                });
+                
+                // 留言筛选按钮
+                document.querySelectorAll('.messages-controls button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.messages-controls button').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentFilter = e.target.dataset.filter;
+                        this.renderMessages();
+                    });
+                });
+                
+                // 刷新留言按钮
+                document.getElementById('refreshMessagesBtn').addEventListener('click', () => {
+                    this.loadMessages();
+                });
+                
+                // 发送测试按钮
+                document.getElementById('sendTestBtn').addEventListener('click', () => {
+                    this.sendTestCheckin();
+                });
+                
+                // 清除本地数据按钮
+                document.getElementById('clearLocalBtn').addEventListener('click', () => {
+                    if (confirm('确定要清除所有本地数据吗？\n这包括自定义城市和本地存储的报平安记录。')) {
+                        localStorage.clear();
+                        location.reload();
+                    }
+                });
+                
+                // 测试API按钮
+                document.getElementById('testApiBtn').addEventListener('click', () => {
+                    this.testAllApis();
+                });
+                
+                // Enter键验证
+                document.getElementById('verifyInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.verifyCode();
+                    }
+                });
+                
+                // Enter键添加城市
+                document.getElementById('customCity').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.addCustomCity();
+                    }
+                });
+            }
+            
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // 数字键 0-7 对应按钮
+                    const keyMap = {
+                        'q': '0', 'w': '1', 'e': '2', 'r': '3',
+                        'a': '4', 's': '5', 'd': '6', 'f': '7',
+                        '0': '0', '1': '1', '2': '2', '3': '3',
+                        '4': '4', '5': '5', '6': '6', '7': '7'
+                    };
+                    
+                    const key = e.key.toLowerCase();
+                    if (keyMap[key] && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                        this.addToSequence(keyMap[key]);
+                        
+                        // 视觉反馈
+                        const btn = document.querySelector(`[data-number="${keyMap[key]}"]`);
+                        if (btn) {
+                            btn.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                btn.style.transform = '';
+                            }, 150);
+                        }
+                    }
+                    
+                    // Ctrl+Enter 提交
+                    if (e.key === 'Enter' && e.ctrlKey && !document.getElementById('submitBtn').disabled) {
+                        e.preventDefault();
+                        this.submitCheckin();
+                    }
+                    
+                    // F5 刷新留言
+                    if (e.key === 'F5') {
+                        e.preventDefault();
+                        this.loadMessages();
+                    }
+                });
+            }
+            
+            showSecurityNotice() {
+                // 在控制台显示安全提示
+                console.log('%c🔒 家庭报平安系统安全提示', 'color: #0066ff; font-size: 16px; font-weight: bold;');
+                console.log('%c家庭暗号已从页面隐藏，请确保输入正确顺序。', 'color: #666;');
+                console.log('%c系统时间: ' + new Date().toLocaleString('zh-TW'), 'color: #888;');
+                
+                // 首次使用时显示提示
+                const hasSeenNotice = localStorage.getItem('hasSeenSecurityNotice');
+                if (!hasSeenNotice) {
+                    setTimeout(() => {
+                        this.showMessage('🔒 安全提示：家庭暗号不会显示在页面上，请凭记忆输入', 'success');
+                        localStorage.setItem('hasSeenSecurityNotice', 'true');
+                    }, 2000);
+                }
+            }
+            
+            async loadDeviceInfo() {
+                this.deviceFingerprint = await this.generateDeviceFingerprint();
+                document.getElementById('deviceFingerprint').textContent = this.deviceFingerprint;
+                
+                try {
+                    const response = await fetch('https://api.ipify.org?format=json');
+                    const data = await response.json();
+                    this.ipAddress = data.ip;
+                    document.getElementById('ipAddress').textContent = this.ipAddress;
+                } catch (error) {
+                    this.ipAddress = '未知';
+                    document.getElementById('ipAddress').textContent = '无法获取 (离线模式)';
+                }
+            }
+            
+            async generateDeviceFingerprint() {
+                const data = [
+                    navigator.userAgent,
+                    navigator.language,
+                    screen.width + 'x' + screen.height,
+                    new Date().getTimezoneOffset()
+                ].join('|');
+                
+                let hash = 0;
+                for (let i = 0; i < data.length; i++) {
+                    hash = ((hash << 5) - hash) + data.charCodeAt(i);
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(36).substring(0, 6).toUpperCase();
+            }
+            
+            addToSequence(number) {
+                // 限制最大长度为6
+                if (this.selectedSequence.length >= 6) {
+                    this.selectedSequence = [number];
+                } else {
+                    this.selectedSequence.push(number);
+                }
+                
+                // 更新按钮状态
+                document.querySelectorAll('.combo-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                const lastBtn = document.querySelector(`[data-number="${number}"]`);
+                if (lastBtn) {
+                    lastBtn.classList.add('active');
+                    
+                    // 添加点击动画
+                    lastBtn.style.animation = 'none';
+                    setTimeout(() => {
+                        lastBtn.style.animation = 'validPulse 0.5s ease-in-out';
+                    }, 10);
+                }
+                
+                // 更新显示
+                const display = this.selectedSequence.join(' ');
+                document.getElementById('sequenceDisplay').textContent = display || '请点击按钮开始';
+                
+                // 生成并显示校验码
+                const verificationCode = this.generateVerificationCode();
+                const codeDisplay = document.getElementById('verificationCode');
+                codeDisplay.textContent = verificationCode;
+                
+                // 检查是否输入了正确的顺序
+                const isCorrect = this.isSequenceCorrect();
+                if (isCorrect) {
+                    codeDisplay.classList.add('valid');
+                    
+                    // 如果之前显示验证结果，清除它
+                    const result = document.getElementById('verificationResult');
+                    result.className = 'verification-result';
+                    result.textContent = '';
+                    
+                    // 自动验证
+                    setTimeout(() => {
+                        this.autoVerifyCode(verificationCode);
+                    }, 300);
+                } else {
+                    codeDisplay.classList.remove('valid');
+                }
+                
+                // 检查是否可以提交
+                this.checkSubmitAvailability();
+            }
+            
+            isSequenceCorrect() {
+                if (this.selectedSequence.length !== this.correctSequence.length) {
+                    return false;
+                }
+                
+                for (let i = 0; i < this.selectedSequence.length; i++) {
+                    if (this.selectedSequence[i] !== this.correctSequence[i]) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            generateVerificationCode() {
+                if (this.selectedSequence.length === 0) return '----';
+                
+                // 使用完整序列生成校验码
+                const buttonCombo = this.selectedSequence.join('');
+                const timestamp = Math.floor(Date.now() / 60000); // 每分钟变化一次
+                const input = this.familyCode + buttonCombo + timestamp;
+                
+                let code = 0;
+                for (let i = 0; i < input.length; i++) {
+                    code = (code * 31 + input.charCodeAt(i)) % 65536;
+                }
+                
+                // 转为4位16进制
+                return code.toString(16).toUpperCase().padStart(4, '0');
+            }
+            
+            verifyCode() {
+                const input = document.getElementById('verifyInput').value.trim().toUpperCase();
+                const result = document.getElementById('verificationResult');
+                
+                if (!input || input.length !== 4) {
+                    result.className = 'verification-result invalid';
+                    result.textContent = '请输入4位校验码';
+                    return;
+                }
+                
+                // 获取当前生成的校验码
+                const currentCode = document.getElementById('verificationCode').textContent;
+                
+                if (input === currentCode && this.isSequenceCorrect()) {
+                    result.className = 'verification-result valid';
+                    result.textContent = '✅ 校验码有效（正确顺序生成）';
+                    
+                    // 视觉反馈
+                    document.getElementById('verificationCode').classList.add('valid');
+                    setTimeout(() => {
+                        document.getElementById('verificationCode').classList.remove('valid');
+                    }, 2000);
+                } else {
+                    result.className = 'verification-result invalid';
+                    result.textContent = '❌ 校验码无效或输入顺序错误';
+                }
+                
+                // 清空输入框
+                document.getElementById('verifyInput').value = '';
+            }
+            
+            autoVerifyCode(code) {
+                const result = document.getElementById('verificationResult');
+                result.className = 'verification-result valid';
+                result.textContent = '✅ 校验码有效（基于正确顺序自动验证）';
+                
+                // 3秒后清除
+                setTimeout(() => {
+                    result.className = 'verification-result';
+                    result.textContent = '';
+                }, 3000);
+            }
+            
+            selectCity(cityCode) {
+                this.selectedCity = cityCode;
+                localStorage.setItem('lastCity', cityCode);
+                
+                document.querySelectorAll('.city-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                document.querySelector(`[data-city="${cityCode}"]`)?.classList.add('active');
+                this.checkSubmitAvailability();
+            }
+            
+            addCustomCity() {
+                const input = document.getElementById('customCity');
+                const cityName = input.value.trim();
+                
+                if (!cityName) return;
+                
+                const code = cityName.substring(0, 3).toLowerCase();
+                this.cityCodes[code] = cityName;
+                
+                localStorage.setItem('customCities', JSON.stringify(this.cityCodes));
+                
+                // 如果已存在则不重复添加
+                if (!document.querySelector(`[data-city="${code}"]`)) {
+                    const cityBtn = document.createElement('div');
+                    cityBtn.className = 'city-btn';
+                    cityBtn.dataset.city = code;
+                    cityBtn.dataset.code = code;
+                    cityBtn.textContent = cityName;
+                    cityBtn.addEventListener('click', (e) => {
+                        this.selectCity(code);
+                    });
+                    
+                    document.getElementById('cityButtons').appendChild(cityBtn);
+                }
+                
+                this.selectCity(code);
+                input.value = '';
+            }
+            
+            loadCustomCities() {
+                try {
+                    const customCities = JSON.parse(localStorage.getItem('customCities') || '{}');
+                    Object.assign(this.cityCodes, customCities);
+                    
+                    Object.entries(customCities).forEach(([code, name]) => {
+                        if (!document.querySelector(`[data-city="${code}"]`)) {
+                            const cityBtn = document.createElement('div');
+                            cityBtn.className = 'city-btn';
+                            cityBtn.dataset.city = code;
+                            cityBtn.dataset.code = code;
+                            cityBtn.textContent = name;
+                            cityBtn.addEventListener('click', (e) => {
+                                this.selectCity(code);
+                            });
+                            document.getElementById('cityButtons').appendChild(cityBtn);
+                        }
+                    });
+                } catch (error) {
+                    console.error('加载自定义城市失败:', error);
+                }
+            }
+            
+            checkSubmitAvailability() {
+                const canSubmit = this.selectedSequence.length > 0 && this.selectedCity !== null;
+                document.getElementById('submitBtn').disabled = !canSubmit;
+            }
+            
+            updateTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('zh-TW', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                document.getElementById('currentTime').textContent = timeStr;
+            }
+            
+            updateNetworkStatus() {
+                const status = navigator.onLine ? '在线' : '离线';
+                document.getElementById('networkStatus').textContent = status;
+            }
+            
+            loadLastCheckinTime() {
+                const lastCheckin = localStorage.getItem('lastCheckin');
+                if (lastCheckin) {
+                    const date = new Date(parseInt(lastCheckin));
+                    const now = new Date();
+                    const diff = Math.floor((now - date) / 1000);
+                    
+                    let displayText;
+                    if (diff < 60) {
+                        displayText = `${diff}秒前`;
+                    } else if (diff < 3600) {
+                        displayText = `${Math.floor(diff / 60)}分钟前`;
+                    } else if (diff < 86400) {
+                        displayText = `${Math.floor(diff / 3600)}小时前`;
+                    } else {
+                        displayText = `${Math.floor(diff / 86400)}天前`;
+                    }
+                    
+                    document.getElementById('lastCheckin').textContent = displayText;
+                }
+            }
+            
+            async loadMessages() {
+                this.showLoading('正在加载留言...', '加载中');
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/api/messages`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.messages = data.messages || [];
+                        this.renderMessages();
+                        this.showMessage('✅ 留言加载成功', 'success');
+                    } else {
+                        throw new Error(data.message || '加载失败');
+                    }
+                } catch (error) {
+                    console.error('加载留言失败:', error);
+                    this.showMessage('⚠️ 加载留言失败: ' + error.message, 'error');
+                    
+                    // 尝试加载本地缓存的留言
+                    this.loadLocalMessages();
+                } finally {
+                    this.hideLoading();
+                }
+            }
+            
+            loadLocalMessages() {
+                try {
+                    const localMessages = JSON.parse(localStorage.getItem('localMessages') || '[]');
+                    if (localMessages.length > 0) {
+                        this.messages = localMessages;
+                        this.renderMessages();
+                        this.showMessage('📱 显示本地缓存的留言', 'success');
+                    }
+                } catch (error) {
+                    console.error('加载本地留言失败:', error);
+                }
+            }
+            
+            renderMessages() {
+                const messagesList = document.getElementById('messagesList');
+                
+                if (this.messages.length === 0) {
+                    messagesList.innerHTML = `
+                        <div class="empty-messages">
+                            <div>📭</div>
+                            <div>暂无留言记录</div>
+                            <div style="font-size: 13px; margin-top: 10px;">发送报平安后可以查看家人留言</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 过滤消息
+                let filteredMessages = [...this.messages];
+                const now = Date.now();
+                
+                switch (this.currentFilter) {
+                    case 'recent':
+                        filteredMessages = filteredMessages.filter(msg => {
+                            const msgTime = msg.t * 1000;
+                            return now - msgTime < 24 * 60 * 60 * 1000; // 24小时内
+                        });
+                        break;
+                    case 'correct':
+                        filteredMessages = filteredMessages.filter(msg => msg.correct);
+                        break;
+                    case 'samecity':
+                        filteredMessages = filteredMessages.filter(msg => msg.l === this.selectedCity);
+                        break;
+                }
+                
+                // 按时间倒序排序
+                filteredMessages.sort((a, b) => b.t - a.t);
+                
+                // 渲染消息 - 注意：测试数据中没有id字段，使用设备指纹d作为标识
+                messagesList.innerHTML = filteredMessages.map(msg => {
+                    const date = new Date(msg.t * 1000);
+                    const timeStr = date.toLocaleTimeString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const dateStr = date.toLocaleDateString('zh-TW');
+                    
+                    // 生成状态信息
+                    let statusText = '';
+                    if (msg.correct) {
+                        statusText = '<span class="status-correct">✅ 正确顺序</span>';
+                    } else {
+                        statusText = '<span class="status-incorrect">⚠️ 其他顺序</span>';
+                    }
+                    
+                    // 获取城市名称
+                    const cityName = this.cityCodes[msg.l] || msg.cityName || msg.l || '未知';
+                    
+                    // 使用设备指纹作为标识（测试数据中没有id字段）
+                    const memberId = msg.id || msg.d || '未知';
+                    
+                    return `
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div class="message-sender">成员 ${memberId.substring(0, 8)}</div>
+                                <div class="message-time">${dateStr} ${timeStr}</div>
+                            </div>
+                            <div class="message-city">${cityName}</div>
+                            <div class="message-content">
+                                校验码: <strong>${msg.c}</strong><br>
+                                输入顺序: <code>${msg.seq || '未知'}</code>
+                            </div>
+                            <div class="message-footer">
+                                <div class="message-status">
+                                    ${statusText}
+                                </div>
+                                <div>IP: ${msg.i ? msg.i.substring(0, 6) + '...' : '未知'}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            async submitCheckin() {
+                if (!this.selectedSequence.length || !this.selectedCity) return;
+                
+                const checkinData = {
+                    id: this.memberId, // 确保包含id字段
+                    t: Math.floor(Date.now() / 1000),
+                    s: this.isSequenceCorrect() ? 'A' : 'B',
+                    c: this.generateVerificationCode(),
+                    l: this.selectedCity,
+                    i: this.ipAddress || '未知',
+                    d: this.deviceFingerprint,
+                    cityName: this.cityCodes[this.selectedCity] || '未知',
+                    seq: this.selectedSequence.join(''),
+                    correct: this.isSequenceCorrect()
+                };
+                
+                this.showLoading('正在发送报平安信息...', '发送中');
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/api/checkin`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(checkinData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.showMessage('✅ 报平安信息发送成功！', 'success');
+                        localStorage.setItem('lastCheckin', Date.now());
+                        this.loadLastCheckinTime();
+                        
+                        // 添加到本地缓存
+                        const localMessages = JSON.parse(localStorage.getItem('localMessages') || '[]');
+                        localMessages.unshift(checkinData);
+                        // 只保留最近50条
+                        if (localMessages.length > 50) {
+                            localMessages.length = 50;
+                        }
+                        localStorage.setItem('localMessages', JSON.stringify(localMessages));
+                        
+                        // 重新加载留言
+                        setTimeout(() => this.loadMessages(), 1000);
+                        
+                        // 清空选择（保留城市选择）
+                        setTimeout(() => {
+                            this.selectedSequence = [];
+                            document.querySelectorAll('.combo-btn').forEach(btn => {
+                                btn.classList.remove('active');
+                            });
+                            document.getElementById('sequenceDisplay').textContent = '请点击按钮开始';
+                            document.getElementById('verificationCode').textContent = '----';
+                            document.getElementById('verificationCode').classList.remove('valid');
+                            document.getElementById('submitBtn').disabled = true;
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message || '服务器处理失败');
+                    }
+                } catch (error) {
+                    console.error('发送失败详情:', error);
+                    this.showMessage('❌ 发送失败: ' + error.message, 'error');
+                    
+                    // 离线保存
+                    const pending = JSON.parse(localStorage.getItem('pending_requests') || '[]');
+                    pending.push({
+                        id: Date.now(),
+                        endpoint: '/api/checkin',
+                        data: checkinData,
+                        retries: 0,
+                        timestamp: Date.now(),
+                        error: error.message
+                    });
+                    localStorage.setItem('pending_requests', JSON.stringify(pending));
+                    this.showMessage('📱 已保存到本地，网络恢复后将自动发送', 'success');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+            
+            async sendTestCheckin() {
+                // 生成测试数据 - 确保包含id字段
+                const testData = {
+                    id: 'TEST' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+                    t: Math.floor(Date.now() / 1000),
+                    s: 'A',
+                    c: Math.random().toString(16).substring(2, 6).toUpperCase(),
+                    l: ['tpe', 'ntpc', 'tyc', 'hcc'][Math.floor(Math.random() * 4)],
+                    i: '192.168.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255),
+                    d: 'TEST' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+                    cityName: ['台北市', '新北市', '桃园市', '新竹市'][Math.floor(Math.random() * 4)],
+                    seq: '314316',
+                    correct: true
+                };
+                
+                this.showLoading('正在发送测试数据...', '测试中');
+                
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/api/checkin`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    this.showMessage('✅ 测试数据发送成功！ID: ' + testData.id, 'success');
+                    
+                    // 重新加载留言
+                    setTimeout(() => this.loadMessages(), 1000);
+                } catch (error) {
+                    console.error('测试发送失败:', error);
+                    this.showMessage('❌ 测试发送失败: ' + error.message, 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+            
+            async testAllApis() {
+                this.showLoading('正在测试所有API...', '测试中');
+                
+                try {
+                    // 测试健康检查
+                    const healthRes = await fetch(`${this.apiBaseUrl}/api/health`);
+                    const healthData = await healthRes.json();
+                    
+                    // 测试留言
+                    const messagesRes = await fetch(`${this.apiBaseUrl}/api/messages?limit=1`);
+                    const messagesData = await messagesRes.json();
+                    
+                    this.hideLoading();
+                    
+                    const result = `
+                        <strong>API测试结果：</strong><br>
+                        1. 健康检查: ${healthData.success ? '✅' : '❌'} ${healthData.message}<br>
+                        2. 留言API: ${messagesData.success ? '✅' : '❌'} ${messagesData.message}<br>
+                        3. 留言数量: ${messagesData.count || 0} 条<br>
+                        <br>
+                        <small>API端点: ${this.apiBaseUrl}</small>
+                    `;
+                    
+                    this.showMessage(result, healthData.success && messagesData.success ? 'success' : 'error');
+                } catch (error) {
+                    this.hideLoading();
+                    this.showMessage('❌ API测试失败: ' + error.message, 'error');
+                }
+            }
+            
+            showLoading(message = '处理中...', title = '处理中') {
+                document.getElementById('loadingOverlay').classList.add('show');
+                document.getElementById('loadingTitle').textContent = title;
+                document.getElementById('loadingMessage').textContent = message;
+            }
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+            
+            showMessage(text, type) {
+                const messageEl = document.getElementById('message');
+                messageEl.innerHTML = text;
+                messageEl.className = `message ${type}`;
+                
+                setTimeout(() => {
+                    messageEl.className = 'message';
+                }, 5000);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.checkinSystem = new EnhancedCheckinSystem();
+            
+            window.addEventListener('online', () => {
+                checkinSystem.updateNetworkStatus();
+                checkinSystem.showMessage('🌐 网络已连接', 'success');
+            });
+            
+            window.addEventListener('offline', () => {
+                checkinSystem.updateNetworkStatus();
+                checkinSystem.showMessage('⚠️ 网络已断开，将使用离线模式', 'error');
+            });
+        });
+    </script>
+</body>
+</html>
