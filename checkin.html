@@ -160,6 +160,18 @@
             letter-spacing: 2px;
         }
         
+        .hidden-sequence {
+            display: inline-block;
+            background: #f0f0f0;
+            color: transparent;
+            text-shadow: 0 0 8px rgba(0,0,0,0.5);
+            user-select: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            letter-spacing: 3px;
+        }
+        
         .combo-buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -791,8 +803,8 @@
                 <h2>数字组合输入</h2>
                 
                 <div class="instructions">
-                    请按正确顺序点击数字按钮：<br>
-                    <strong>3 1 4 3 1 6</strong><br>
+                    请输入6位家庭暗号数字组合<br>
+                    <div class="hidden-sequence">3 1 4 3 1 6</div>
                     （每次点击都会生成不同的校验码）
                 </div>
                 
@@ -892,7 +904,7 @@
     <script>
         class EnhancedCheckinSystem {
             constructor() {
-                // 正确的顺序：314316
+                // 正确的顺序：314316（现在已从页面上隐藏）
                 this.correctSequence = ['3', '1', '4', '3', '1', '6'];
                 this.selectedSequence = [];
                 this.selectedCity = null;
@@ -945,6 +957,9 @@
                 
                 // 尝试加载留言
                 setTimeout(() => this.loadMessages(), 1000);
+                
+                // 安全提示：隐藏顺序
+                this.showSecurityNotice();
             }
             
             setupEventListeners() {
@@ -1059,6 +1074,22 @@
                         this.loadMessages();
                     }
                 });
+            }
+            
+            showSecurityNotice() {
+                // 在控制台显示安全提示
+                console.log('%c🔒 家庭报平安系统安全提示', 'color: #0066ff; font-size: 16px; font-weight: bold;');
+                console.log('%c家庭暗号已从页面隐藏，请确保输入正确顺序。', 'color: #666;');
+                console.log('%c系统时间: ' + new Date().toLocaleString('zh-TW'), 'color: #888;');
+                
+                // 首次使用时显示提示
+                const hasSeenNotice = localStorage.getItem('hasSeenSecurityNotice');
+                if (!hasSeenNotice) {
+                    setTimeout(() => {
+                        this.showMessage('🔒 安全提示：家庭暗号不会显示在页面上，请凭记忆输入', 'success');
+                        localStorage.setItem('hasSeenSecurityNotice', 'true');
+                    }, 2000);
+                }
             }
             
             async loadDeviceInfo() {
