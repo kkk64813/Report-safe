@@ -169,7 +169,7 @@
         
         .combo-buttons {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -239,118 +239,7 @@
             border: 1px dashed rgba(255, 107, 53, 0.3);
         }
         
-        .verification-section {
-            background: linear-gradient(135deg, #f8f0ff 0%, #f0e0ff 100%);
-            border-radius: 12px;
-            padding: 25px;
-            margin: 30px 0;
-            border: 1px solid rgba(142, 68, 173, 0.2);
-        }
-        
-        .verification-section h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #8e44ad;
-            text-align: center;
-        }
-        
-        .verification-box {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 2px solid rgba(142, 68, 173, 0.2);
-        }
-        
-        .verification-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 36px;
-            letter-spacing: 5px;
-            color: #8e44ad;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(142, 68, 173, 0.05);
-            border-radius: 10px;
-            border: 2px dashed rgba(142, 68, 173, 0.3);
-            transition: all 0.3s;
-        }
-        
-        .verification-code.valid {
-            background: rgba(0, 200, 83, 0.1);
-            border-color: #00c853;
-            color: #00c853;
-            animation: validPulse 2s ease-in-out;
-        }
-        
-        @keyframes validPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .verification-hint {
-            font-size: 13px;
-            color: #666;
-            margin-top: 15px;
-        }
-        
-        .verify-section {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            border: 2px solid rgba(0, 120, 255, 0.2);
-        }
-        
-        .verify-section h3 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #0066ff;
-            text-align: center;
-        }
-        
-        .verify-input {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .verify-input input {
-            flex: 1;
-            padding: 15px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            text-align: center;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            background: white;
-            letter-spacing: 3px;
-            transition: all 0.3s;
-        }
-        
-        .verify-input input:focus {
-            outline: none;
-            border-color: #0066ff;
-            box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.1);
-        }
-        
-        .verify-input button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .verify-input button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 102, 255, 0.3);
-        }
-        
-        .verification-result {
+        .password-result {
             text-align: center;
             padding: 15px;
             border-radius: 10px;
@@ -359,14 +248,14 @@
             animation: slideIn 0.3s ease-out;
         }
         
-        .verification-result.valid {
+        .password-result.correct {
             display: block;
             background: rgba(0, 200, 83, 0.1);
             color: #00c853;
             border: 2px solid #00c853;
         }
         
-        .verification-result.invalid {
+        .password-result.incorrect {
             display: block;
             background: rgba(255, 68, 68, 0.1);
             color: #ff4444;
@@ -893,7 +782,7 @@
             }
             
             .combo-buttons {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
             
             .city-grid {
@@ -902,10 +791,6 @@
             
             .info-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .verify-input {
-                flex-direction: column;
             }
             
             .verification-code {
@@ -971,57 +856,38 @@
             </div>
             
             <div class="combo-section">
-                <h2>数字组合输入</h2>
+                <h2>数字密码输入</h2>
                 
                 <div class="instructions">
                     请输入6位家庭暗号数字组合<br>
                     <div class="hidden-sequence">3 1 4 3 1 6</div>
-                    （每次点击都会生成不同的校验码）
+                    只有输入正确密码后才能解锁留言功能
                 </div>
                 
                 <div class="combo-buttons">
-                    <button class="combo-btn" data-number="0" data-key="Q">0</button>
-                    <button class="combo-btn" data-number="1" data-key="W">1</button>
-                    <button class="combo-btn" data-number="2" data-key="E">2</button>
-                    <button class="combo-btn" data-number="3" data-key="R">3</button>
-                    <button class="combo-btn" data-number="4" data-key="A">4</button>
-                    <button class="combo-btn" data-number="5" data-key="S">5</button>
-                    <button class="combo-btn" data-number="6" data-key="D">6</button>
-                    <button class="combo-btn" data-number="7" data-key="F">7</button>
+                    <button class="combo-btn" data-number="1">1</button>
+                    <button class="combo-btn" data-number="2">2</button>
+                    <button class="combo-btn" data-number="3">3</button>
+                    <button class="combo-btn" data-number="4">4</button>
+                    <button class="combo-btn" data-number="5">5</button>
+                    <button class="combo-btn" data-number="6">6</button>
+                    <button class="combo-btn" data-number="7">7</button>
+                    <button class="combo-btn" data-number="8">8</button>
+                    <button class="combo-btn" data-number="9">9</button>
+                    <button class="combo-btn" data-number="0">0</button>
+                    <button class="combo-btn" style="background: #ff6b35; color: white;" id="clearBtn">清除</button>
+                    <button class="combo-btn" style="background: #0066ff; color: white;" id="submitPasswordBtn">确认</button>
                 </div>
                 
                 <div class="combo-sequence">
-                    <div class="sequence-label">当前输入顺序</div>
-                    <div class="sequence-display" id="sequenceDisplay">请点击按钮开始</div>
-                </div>
-            </div>
-            
-            <div class="verification-section">
-                <h2>校验码生成</h2>
-                
-                <div class="verification-box">
-                    <div class="sequence-label">根据您的输入生成的校验码</div>
-                    <div class="verification-code" id="verificationCode">----</div>
-                    <div class="verification-hint">
-                        校验码基于输入顺序、时间和家庭密码自动生成<br>
-                        只有正确的输入顺序才能生成有效的校验码
-                    </div>
+                    <div class="sequence-label">当前输入</div>
+                    <div class="sequence-display" id="sequenceDisplay">请点击按钮输入密码</div>
                 </div>
                 
-                <div class="verify-section">
-                    <h3>校验码验证</h3>
-                    <div class="verify-input">
-                        <input type="text" id="verifyInput" maxlength="4" placeholder="输入4位校验码" autocomplete="off">
-                        <button id="verifyButton">验证</button>
-                    </div>
-                    <div class="verification-result" id="verificationResult"></div>
-                    <div class="verification-hint">
-                        您可以复制上面的校验码来验证，只有正确顺序生成的校验码才能通过验证
-                    </div>
-                </div>
+                <div class="password-result" id="passwordResult"></div>
             </div>
             
-            <div class="city-section">
+            <div class="city-section" id="citySection" style="display: none;">
                 <h2>选择您所在城市</h2>
                 <div class="city-grid" id="cityButtons">
                     <div class="city-btn" data-city="tpe" data-code="tpe">台北市</div>
@@ -1040,7 +906,7 @@
             </div>
             
             <!-- 新增：留言署名输入区域 -->
-            <div class="message-section">
+            <div class="message-section" id="messageSection" style="display: none;">
                 <h2>留言与署名</h2>
                 <div class="message-input-group">
                     <div class="message-field">
@@ -1060,8 +926,8 @@
                 </div>
             </div>
             
-            <div class="submit-section">
-                <button class="submit-btn" id="submitBtn" disabled>发送报平安信息</button>
+            <div class="submit-section" id="submitSection" style="display: none;">
+                <button class="submit-btn" id="submitBtn">发送报平安信息</button>
             </div>
         </div>
         
@@ -1119,9 +985,9 @@
                 
                 <div class="messages-list" id="messagesList">
                     <div class="empty-messages">
-                        <div>📭</div>
-                        <div>暂无留言记录</div>
-                        <div style="font-size: 13px; margin-top: 10px;">发送报平安后可以查看家人留言</div>
+                        <div>🔒</div>
+                        <div>请输入密码解锁留言功能</div>
+                        <div style="font-size: 13px; margin-top: 10px;">输入正确密码后可以查看家人留言</div>
                     </div>
                 </div>
             </div>
@@ -1137,9 +1003,9 @@
     <script>
         class EnhancedCheckinSystem {
             constructor() {
-                // 正确的顺序：314316
-                this.correctSequence = ['3', '1', '4', '3', '1', '6'];
-                this.selectedSequence = [];
+                // 正确的密码：314316
+                this.correctPassword = ['3', '1', '4', '3', '1', '6'];
+                this.inputPassword = [];
                 this.selectedCity = null;
                 this.deviceFingerprint = null;
                 this.ipAddress = null;
@@ -1148,6 +1014,7 @@
                 this.apiBaseUrl = "https://report-safe.mgjack13.workers.dev";
                 this.messages = [];
                 this.currentFilter = 'all';
+                this.isPasswordCorrect = false;
                 
                 // 过滤条件
                 this.filterConditions = {
@@ -1192,11 +1059,12 @@
                 
                 setInterval(() => this.updateTime(), 1000);
                 
-                // 键盘快捷键支持
-                this.setupKeyboardShortcuts();
-                
                 // 尝试加载留言
-                setTimeout(() => this.loadMessages(), 1000);
+                setTimeout(() => {
+                    if (this.isPasswordCorrect) {
+                        this.loadMessages();
+                    }
+                }, 1000);
                 
                 // 安全提示
                 this.showSecurityNotice();
@@ -1204,11 +1072,21 @@
             
             setupEventListeners() {
                 // 数字按钮点击
-                document.querySelectorAll('.combo-btn').forEach(btn => {
+                document.querySelectorAll('.combo-btn[data-number]').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const number = e.target.dataset.number;
-                        this.addToSequence(number);
+                        this.addToPassword(number);
                     });
+                });
+                
+                // 清除按钮
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearPassword();
+                });
+                
+                // 确认按钮
+                document.getElementById('submitPasswordBtn').addEventListener('click', () => {
+                    this.checkPassword();
                 });
                 
                 // 城市按钮
@@ -1227,11 +1105,6 @@
                 // 提交按钮
                 document.getElementById('submitBtn').addEventListener('click', () => {
                     this.submitCheckin();
-                });
-                
-                // 验证按钮
-                document.getElementById('verifyButton').addEventListener('click', () => {
-                    this.verifyCode();
                 });
                 
                 // 留言筛选按钮
@@ -1289,13 +1162,6 @@
                     this.testAllApis();
                 });
                 
-                // Enter键验证
-                document.getElementById('verifyInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.verifyCode();
-                    }
-                });
-                
                 // Enter键添加城市
                 document.getElementById('customCity').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -1315,49 +1181,9 @@
                 });
             }
             
-            setupKeyboardShortcuts() {
-                document.addEventListener('keydown', (e) => {
-                    const keyMap = {
-                        'q': '0', 'w': '1', 'e': '2', 'r': '3',
-                        'a': '4', 's': '5', 'd': '6', 'f': '7',
-                        '0': '0', '1': '1', '2': '2', '3': '3',
-                        '4': '4', '5': '5', '6': '6', '7': '7'
-                    };
-                    
-                    const key = e.key.toLowerCase();
-                    if (keyMap[key] && !e.ctrlKey && !e.metaKey) {
-                        e.preventDefault();
-                        this.addToSequence(keyMap[key]);
-                        
-                        const btn = document.querySelector(`[data-number="${keyMap[key]}"]`);
-                        if (btn) {
-                            btn.style.transform = 'scale(0.95)';
-                            setTimeout(() => {
-                                btn.style.transform = '';
-                            }, 150);
-                        }
-                    }
-                    
-                    if (e.key === 'Enter' && e.ctrlKey && !document.getElementById('submitBtn').disabled) {
-                        e.preventDefault();
-                        this.submitCheckin();
-                    }
-                    
-                    if (e.key === 'F5') {
-                        e.preventDefault();
-                        this.loadMessages();
-                    }
-                    
-                    if (e.key === 'Escape' && document.getElementById('filterPanel').classList.contains('show')) {
-                        e.preventDefault();
-                        document.getElementById('filterPanel').classList.remove('show');
-                    }
-                });
-            }
-            
             showSecurityNotice() {
                 console.log('%c🔒 家庭报平安系统安全提示', 'color: #0066ff; font-size: 16px; font-weight: bold;');
-                console.log('%c家庭暗号不会显示在留言板中，确保信息安全。', 'color: #666;');
+                console.log('%c家庭密码为314316，请勿泄露。', 'color: #666;');
             }
             
             async loadDeviceInfo() {
@@ -1391,117 +1217,73 @@
                 return Math.abs(hash).toString(36).substring(0, 8).toUpperCase();
             }
             
-            addToSequence(number) {
-                if (this.selectedSequence.length >= 6) {
-                    this.selectedSequence = [number];
-                } else {
-                    this.selectedSequence.push(number);
+            addToPassword(number) {
+                if (this.inputPassword.length >= 6) {
+                    return;
                 }
                 
-                document.querySelectorAll('.combo-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
+                this.inputPassword.push(number);
                 
-                const lastBtn = document.querySelector(`[data-number="${number}"]`);
-                if (lastBtn) {
-                    lastBtn.classList.add('active');
-                    lastBtn.style.animation = 'none';
-                    setTimeout(() => {
-                        lastBtn.style.animation = 'validPulse 0.5s ease-in-out';
-                    }, 10);
-                }
+                // 更新显示
+                const maskedDisplay = this.inputPassword.map(() => '●').join(' ');
+                document.getElementById('sequenceDisplay').textContent = maskedDisplay;
                 
-                // 用圆点显示而不是真实数字
-                const maskedDisplay = this.selectedSequence.map(() => '●').join(' ');
-                document.getElementById('sequenceDisplay').textContent = maskedDisplay || '请点击按钮开始';
-                
-                const verificationCode = this.generateVerificationCode();
-                const codeDisplay = document.getElementById('verificationCode');
-                codeDisplay.textContent = verificationCode;
-                
-                const isCorrect = this.isSequenceCorrect();
-                if (isCorrect) {
-                    codeDisplay.classList.add('valid');
-                    const result = document.getElementById('verificationResult');
-                    result.className = 'verification-result';
-                    result.textContent = '';
-                    
-                    setTimeout(() => {
-                        this.autoVerifyCode(verificationCode);
-                    }, 300);
-                } else {
-                    codeDisplay.classList.remove('valid');
-                }
-                
-                this.checkSubmitAvailability();
+                // 清除之前的验证结果
+                document.getElementById('passwordResult').className = 'password-result';
             }
             
-            isSequenceCorrect() {
-                if (this.selectedSequence.length !== this.correctSequence.length) {
+            clearPassword() {
+                this.inputPassword = [];
+                document.getElementById('sequenceDisplay').textContent = '请点击按钮输入密码';
+                document.getElementById('passwordResult').className = 'password-result';
+            }
+            
+            checkPassword() {
+                if (this.inputPassword.length !== 6) {
+                    const result = document.getElementById('passwordResult');
+                    result.className = 'password-result incorrect';
+                    result.textContent = '❌ 请输入6位密码';
+                    return;
+                }
+                
+                const isCorrect = this.isPasswordCorrectCheck();
+                const result = document.getElementById('passwordResult');
+                
+                if (isCorrect) {
+                    result.className = 'password-result correct';
+                    result.textContent = '✅ 密码正确！已解锁留言功能';
+                    this.isPasswordCorrect = true;
+                    
+                    // 解锁后续功能
+                    document.getElementById('citySection').style.display = 'block';
+                    document.getElementById('messageSection').style.display = 'block';
+                    document.getElementById('submitSection').style.display = 'block';
+                    
+                    // 加载留言
+                    setTimeout(() => this.loadMessages(), 500);
+                    
+                    // 保存密码验证状态到localStorage
+                    localStorage.setItem('passwordVerified', 'true');
+                    localStorage.setItem('passwordVerifiedTime', Date.now());
+                } else {
+                    result.className = 'password-result incorrect';
+                    result.textContent = '❌ 密码错误，请重新输入';
+                    this.clearPassword();
+                }
+            }
+            
+            isPasswordCorrectCheck() {
+                if (this.inputPassword.length !== this.correctPassword.length) {
                     return false;
                 }
                 
-                for (let i = 0; i < this.selectedSequence.length; i++) {
-                    if (this.selectedSequence[i] !== this.correctSequence[i]) {
+                for (let i = 0; i < this.inputPassword.length; i++) {
+                    if (this.inputPassword[i] !== this.correctPassword[i]) {
                         return false;
                     }
                 }
                 
                 return true;
-            }
-            
-            generateVerificationCode() {
-                if (this.selectedSequence.length === 0) return '----';
-                
-                const buttonCombo = this.selectedSequence.join('');
-                const timestamp = Math.floor(Date.now() / 60000);
-                const input = this.familyCode + buttonCombo + timestamp;
-                
-                let code = 0;
-                for (let i = 0; i < input.length; i++) {
-                    code = (code * 31 + input.charCodeAt(i)) % 65536;
-                }
-                
-                return code.toString(16).toUpperCase().padStart(4, '0');
-            }
-            
-            verifyCode() {
-                const input = document.getElementById('verifyInput').value.trim().toUpperCase();
-                const result = document.getElementById('verificationResult');
-                
-                if (!input || input.length !== 4) {
-                    result.className = 'verification-result invalid';
-                    result.textContent = '请输入4位校验码';
-                    return;
-                }
-                
-                const currentCode = document.getElementById('verificationCode').textContent;
-                
-                if (input === currentCode && this.isSequenceCorrect()) {
-                    result.className = 'verification-result valid';
-                    result.textContent = '✅ 校验码有效（正确顺序生成）';
-                    
-                    document.getElementById('verificationCode').classList.add('valid');
-                    setTimeout(() => {
-                        document.getElementById('verificationCode').classList.remove('valid');
-                    }, 2000);
-                } else {
-                    result.className = 'verification-result invalid';
-                    result.textContent = '❌ 校验码无效或输入顺序错误';
-                }
-                
-                document.getElementById('verifyInput').value = '';
-            }
-            
-            autoVerifyCode(code) {
-                const result = document.getElementById('verificationResult');
-                result.className = 'verification-result valid';
-                result.textContent = '✅ 校验码有效（基于正确顺序自动验证）';
-                
-                setTimeout(() => {
-                    result.className = 'verification-result';
-                    result.textContent = '';
-                }, 3000);
             }
             
             selectCity(cityCode) {
@@ -1513,7 +1295,6 @@
                 });
                 
                 document.querySelector(`[data-city="${cityCode}"]`)?.classList.add('active');
-                this.checkSubmitAvailability();
             }
             
             addCustomCity() {
@@ -1567,11 +1348,6 @@
                 }
             }
             
-            checkSubmitAvailability() {
-                const canSubmit = this.selectedSequence.length > 0 && this.selectedCity !== null;
-                document.getElementById('submitBtn').disabled = !canSubmit;
-            }
-            
             updateTime() {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('zh-TW', {
@@ -1611,6 +1387,10 @@
             }
             
             async loadMessages() {
+                if (!this.isPasswordCorrect) {
+                    return;
+                }
+                
                 this.showLoading('正在加载留言...', '加载中');
                 
                 try {
@@ -1678,6 +1458,17 @@
             renderMessages() {
                 const messagesList = document.getElementById('messagesList');
                 
+                if (!this.isPasswordCorrect) {
+                    messagesList.innerHTML = `
+                        <div class="empty-messages">
+                            <div>🔒</div>
+                            <div>请输入密码解锁留言功能</div>
+                            <div style="font-size: 13px; margin-top: 10px;">输入正确密码后可以查看家人留言</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 // 应用过滤条件
                 let filteredMessages = this.applyMessageFilters(this.messages);
                 
@@ -1725,7 +1516,7 @@
                     const isCorrect = msg.correct || msg.s === 'A';
                     
                     if (isCorrect) {
-                        statusText = '✅ 正确顺序';
+                        statusText = '✅ 正确密码';
                         statusClass = 'status-correct';
                     } else {
                         statusText = '⚠️ 其他顺序';
@@ -1735,17 +1526,17 @@
                     const cityName = this.cityCodes[msg.l] || msg.cityName || msg.l || '未知';
                     const memberId = msg.id || msg.d || '未知';
                     
-                    // 兼容多种字段名，尝试获取署名和留言
-                    const signature = msg.sig || msg.signature || msg.n || msg.name || '匿名';
-                    const userMessage = msg.msg || msg.message || msg.content || msg.text || '';
+                    // 尝试获取署名和留言 - 兼容多种字段名
+                    const signature = msg.sig || msg.signature || msg.n || msg.name || msg.from || '匿名';
+                    const userMessage = msg.msg || msg.message || msg.content || msg.text || msg.comment || '';
                     
                     return `
                         <div class="message-item">
                             <div class="message-header">
-                                <div class="message-sender">${signature}</div>
+                                <div class="message-sender">${this.escapeHtml(signature)}</div>
                                 <div class="message-time">${dateStr} ${timeStr}</div>
                             </div>
-                            ${signature !== '匿名' ? `<div class="message-signature">${signature}</div>` : ''}
+                            ${signature !== '匿名' ? `<div class="message-signature">${this.escapeHtml(signature)}</div>` : ''}
                             <div class="message-city">${cityName}</div>
                             ${userMessage ? `<div class="message-content">${this.escapeHtml(userMessage)}</div>` : ''}
                             <div class="message-footer">
@@ -1776,7 +1567,7 @@
                 if (this.filterConditions.signature.trim()) {
                     const searchTerm = this.filterConditions.signature.toLowerCase().trim();
                     filtered = filtered.filter(msg => {
-                        const signature = (msg.sig || msg.signature || msg.n || msg.name || '').toLowerCase();
+                        const signature = (msg.sig || msg.signature || msg.n || msg.name || msg.from || '').toLowerCase();
                         return signature.includes(searchTerm);
                     });
                 }
@@ -1836,33 +1627,49 @@
                 return div.innerHTML.replace(/\n/g, '<br>');
             }
             
-            async submitCheckin() {
-                if (!this.selectedSequence.length || !this.selectedCity) return;
+            generateVerificationCode() {
+                const timestamp = Math.floor(Date.now() / 60000);
+                const input = this.familyCode + timestamp;
                 
-                const isCorrect = this.isSequenceCorrect();
-                const verificationCode = this.generateVerificationCode();
+                let code = 0;
+                for (let i = 0; i < input.length; i++) {
+                    code = (code * 31 + input.charCodeAt(i)) % 65536;
+                }
+                
+                return code.toString(16).toUpperCase().padStart(4, '0');
+            }
+            
+            async submitCheckin() {
+                if (!this.selectedCity) {
+                    this.showMessage('❌ 请选择所在城市', 'error');
+                    return;
+                }
+                
                 const signature = document.getElementById('signature').value.trim() || '匿名';
                 const userMessage = document.getElementById('userMessage').value.trim();
+                const verificationCode = this.generateVerificationCode();
                 
                 const checkinData = {
                     id: this.memberId,
                     t: Math.floor(Date.now() / 1000),
-                    s: isCorrect ? 'A' : 'B',
+                    s: 'A', // 现在只要密码正确就是A
                     c: verificationCode,
                     l: this.selectedCity,
                     i: this.ipAddress || '未知',
                     d: this.deviceFingerprint,
                     cityName: this.cityCodes[this.selectedCity] || '未知',
-                    correct: isCorrect,
+                    correct: true,
                     // 发送多个字段名版本确保兼容性
-                    sig: signature,       // 主要字段名
-                    signature: signature, // 备用字段名1
-                    n: signature,         // 备用字段名2 (name)
-                    name: signature,      // 备用字段名3
-                    msg: userMessage,     // 主要字段名
-                    message: userMessage, // 备用字段名1
-                    content: userMessage, // 备用字段名2
-                    text: userMessage     // 备用字段名3
+                    sig: signature,
+                    signature: signature,
+                    n: signature,
+                    name: signature,
+                    from: signature,
+                    msg: userMessage,
+                    message: userMessage,
+                    content: userMessage,
+                    text: userMessage,
+                    comment: userMessage
                 };
                 
                 this.showLoading('正在发送报平安信息...', '发送中');
@@ -1898,20 +1705,17 @@
                         this.messages.unshift(checkinData);
                         this.renderMessages();
                         
-                        setTimeout(() => {
-                            this.selectedSequence = [];
-                            document.querySelectorAll('.combo-btn').forEach(btn => {
-                                btn.classList.remove('active');
-                            });
-                            document.getElementById('sequenceDisplay').textContent = '请点击按钮开始';
-                            document.getElementById('verificationCode').textContent = '----';
-                            document.getElementById('verificationCode').classList.remove('valid');
-                            document.getElementById('signature').value = '';
-                            document.getElementById('userMessage').value = '';
-                            document.getElementById('signatureCount').textContent = '0/10';
-                            document.getElementById('messageCount').textContent = '0/200';
-                            document.getElementById('submitBtn').disabled = true;
-                        }, 2000);
+                        // 清空输入
+                        document.getElementById('signature').value = '';
+                        document.getElementById('userMessage').value = '';
+                        document.getElementById('signatureCount').textContent = '0/10';
+                        document.getElementById('messageCount').textContent = '0/200';
+                        
+                        // 重置城市选择
+                        document.querySelectorAll('.city-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        this.selectedCity = null;
                     } else {
                         throw new Error(data.message || '服务器处理失败');
                     }
@@ -1966,13 +1770,7 @@
                     cityName: ['台北市', '新北市', '桃园市', '新竹市'][Math.floor(Math.random() * 4)],
                     correct: true,
                     sig: signatures[Math.floor(Math.random() * signatures.length)],
-                    signature: signatures[Math.floor(Math.random() * signatures.length)],
-                    n: signatures[Math.floor(Math.random() * signatures.length)],
-                    name: signatures[Math.floor(Math.random() * signatures.length)],
-                    msg: messages[Math.floor(Math.random() * messages.length)],
-                    message: messages[Math.floor(Math.random() * messages.length)],
-                    content: messages[Math.floor(Math.random() * messages.length)],
-                    text: messages[Math.floor(Math.random() * messages.length)]
+                    msg: messages[Math.floor(Math.random() * messages.length)]
                 };
                 
                 this.showLoading('正在发送测试数据...', '测试中');
@@ -2067,7 +1865,30 @@
         
         // 初始化系统
         document.addEventListener('DOMContentLoaded', () => {
+            // 检查是否已经验证过密码
+            const passwordVerified = localStorage.getItem('passwordVerified');
+            const passwordVerifiedTime = localStorage.getItem('passwordVerifiedTime');
+            const now = Date.now();
+            
             window.checkinSystem = new EnhancedCheckinSystem();
+            
+            // 如果之前验证过密码且在24小时内，自动解锁
+            if (passwordVerified === 'true' && passwordVerifiedTime && (now - parseInt(passwordVerifiedTime)) < 24 * 60 * 60 * 1000) {
+                setTimeout(() => {
+                    checkinSystem.isPasswordCorrect = true;
+                    document.getElementById('citySection').style.display = 'block';
+                    document.getElementById('messageSection').style.display = 'block';
+                    document.getElementById('submitSection').style.display = 'block';
+                    
+                    // 更新UI显示
+                    document.getElementById('sequenceDisplay').textContent = '●● ●● ●●';
+                    document.getElementById('passwordResult').className = 'password-result correct';
+                    document.getElementById('passwordResult').textContent = '✅ 密码已自动验证';
+                    
+                    // 加载留言
+                    setTimeout(() => checkinSystem.loadMessages(), 500);
+                }, 1000);
+            }
             
             window.addEventListener('online', () => {
                 checkinSystem.updateNetworkStatus();
