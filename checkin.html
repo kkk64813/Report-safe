@@ -1,3 +1,5 @@
+[file name]: checkin.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -438,6 +440,76 @@
             box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.1);
         }
         
+        /* 留言署名输入区域 - 新增样式 */
+        .message-section {
+            background: linear-gradient(135deg, #fff8f0 0%, #fff0e0 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 165, 0, 0.2);
+        }
+        
+        .message-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #ff9800;
+            text-align: center;
+        }
+        
+        .message-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .message-field {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message-field label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ff9800;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .message-field .char-count {
+            font-size: 13px;
+            color: #999;
+            font-weight: normal;
+        }
+        
+        .message-field input,
+        .message-field textarea {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-family: 'Microsoft JhengHei';
+            transition: all 0.3s;
+            resize: none;
+        }
+        
+        .message-field input:focus,
+        .message-field textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+        }
+        
+        .message-field textarea {
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        
+        .message-field input::placeholder,
+        .message-field textarea::placeholder {
+            color: #aaa;
+        }
+        
         .custom-city button {
             padding: 15px 25px;
             background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
@@ -485,7 +557,7 @@
             cursor: not-allowed;
         }
         
-        /* 留言侧边栏样式 */
+        /* 留言侧边栏样式 - 已修改 */
         .messages-sidebar {
             background: linear-gradient(135deg, #fff8f0 0%, #fff0e0 100%);
             border-radius: 12px;
@@ -533,6 +605,97 @@
             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
             color: white;
             border-color: #ff9800;
+        }
+        
+        /* 过滤面板 - 新增样式 */
+        .filter-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 152, 0, 0.2);
+            display: none;
+        }
+        
+        .filter-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .filter-panel h3 {
+            font-size: 16px;
+            color: #ff9800;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .filter-panel h3 button {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Microsoft JhengHei';
+            font-size: 14px;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .filter-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-buttons button:first-child {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+        
+        .filter-buttons button:last-child {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .filter-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
         .messages-list {
@@ -587,10 +750,27 @@
             margin-bottom: 10px;
         }
         
+        /* 新增：署名标签样式 */
+        .message-signature {
+            display: inline-block;
+            background: rgba(0, 120, 255, 0.1);
+            color: #0066ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+            margin-bottom: 10px;
+        }
+        
         .message-content {
             color: #555;
             line-height: 1.5;
             margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 3px solid #ff9800;
         }
         
         .message-footer {
@@ -736,6 +916,10 @@
             .nav-buttons {
                 flex-direction: column;
             }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -855,6 +1039,27 @@
                 </div>
             </div>
             
+            <!-- 新增：留言署名输入区域 -->
+            <div class="message-section">
+                <h2>留言与署名</h2>
+                <div class="message-input-group">
+                    <div class="message-field">
+                        <label>
+                            署名（可选，10字以内）
+                            <span class="char-count" id="signatureCount">0/10</span>
+                        </label>
+                        <input type="text" id="signature" maxlength="10" placeholder="输入您的署名（如：爸爸、妈妈、小明）" autocomplete="off">
+                    </div>
+                    <div class="message-field">
+                        <label>
+                            留言（可选，200字以内）
+                            <span class="char-count" id="messageCount">0/200</span>
+                        </label>
+                        <textarea id="userMessage" maxlength="200" placeholder="输入留言内容，告诉家人您的近况或想说的话语..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
             <div class="submit-section">
                 <button class="submit-btn" id="submitBtn" disabled>发送报平安信息</button>
             </div>
@@ -869,6 +1074,47 @@
                     <button data-filter="recent">最近24小时</button>
                     <button data-filter="correct">正确顺序</button>
                     <button data-filter="samecity">同城市</button>
+                    <button id="filterToggleBtn">🔍 更多过滤</button>
+                </div>
+                
+                <!-- 新增：过滤面板 -->
+                <div class="filter-panel" id="filterPanel">
+                    <h3>
+                        高级过滤
+                        <button id="closeFilterBtn">✕</button>
+                    </h3>
+                    <div class="filter-group">
+                        <label>时间范围</label>
+                        <select id="filterTimeRange">
+                            <option value="all">全部时间</option>
+                            <option value="today">今天</option>
+                            <option value="week">本周</option>
+                            <option value="month">本月</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>署名筛选</label>
+                        <input type="text" id="filterSignature" placeholder="输入署名关键词">
+                    </div>
+                    <div class="filter-group">
+                        <label>城市筛选</label>
+                        <select id="filterCity">
+                            <option value="">全部城市</option>
+                            <option value="tpe">台北市</option>
+                            <option value="ntpc">新北市</option>
+                            <option value="tyc">桃园市</option>
+                            <option value="hcc">新竹市</option>
+                            <option value="hsc">新竹县</option>
+                            <option value="ilc">宜兰县</option>
+                            <option value="mkc">苗栗县</option>
+                            <option value="sth">南台湾</option>
+                        </select>
+                    </div>
+                    <div class="filter-buttons">
+                        <button id="applyFilterBtn">应用过滤</button>
+                        <button id="resetFilterBtn">重置过滤</button>
+                    </div>
                 </div>
                 
                 <div class="messages-list" id="messagesList">
@@ -902,6 +1148,13 @@
                 this.apiBaseUrl = "https://report-safe.mgjack13.workers.dev";
                 this.messages = [];
                 this.currentFilter = 'all';
+                
+                // 过滤条件
+                this.filterConditions = {
+                    timeRange: 'all',
+                    signature: '',
+                    city: ''
+                };
                 
                 // 台湾城市编码映射
                 this.cityCodes = {
@@ -983,12 +1236,34 @@
                 
                 // 留言筛选按钮
                 document.querySelectorAll('.messages-controls button').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.messages-controls button').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.currentFilter = e.target.dataset.filter;
-                        this.renderMessages();
-                    });
+                    if (btn.id !== 'filterToggleBtn') {
+                        btn.addEventListener('click', (e) => {
+                            document.querySelectorAll('.messages-controls button').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            this.currentFilter = e.target.dataset.filter;
+                            this.renderMessages();
+                        });
+                    }
+                });
+                
+                // 过滤面板控制
+                document.getElementById('filterToggleBtn').addEventListener('click', () => {
+                    document.getElementById('filterPanel').classList.toggle('show');
+                });
+                
+                document.getElementById('closeFilterBtn').addEventListener('click', () => {
+                    document.getElementById('filterPanel').classList.remove('show');
+                });
+                
+                // 应用过滤
+                document.getElementById('applyFilterBtn').addEventListener('click', () => {
+                    this.applyFilters();
+                    document.getElementById('filterPanel').classList.remove('show');
+                });
+                
+                // 重置过滤
+                document.getElementById('resetFilterBtn').addEventListener('click', () => {
+                    this.resetFilters();
                 });
                 
                 // 刷新留言按钮
@@ -1027,6 +1302,17 @@
                         this.addCustomCity();
                     }
                 });
+                
+                // 留言和署名输入框字符计数
+                document.getElementById('signature').addEventListener('input', (e) => {
+                    const length = e.target.value.length;
+                    document.getElementById('signatureCount').textContent = `${length}/10`;
+                });
+                
+                document.getElementById('userMessage').addEventListener('input', (e) => {
+                    const length = e.target.value.length;
+                    document.getElementById('messageCount').textContent = `${length}/200`;
+                });
             }
             
             setupKeyboardShortcuts() {
@@ -1060,6 +1346,11 @@
                     if (e.key === 'F5') {
                         e.preventDefault();
                         this.loadMessages();
+                    }
+                    
+                    if (e.key === 'Escape' && document.getElementById('filterPanel').classList.contains('show')) {
+                        e.preventDefault();
+                        document.getElementById('filterPanel').classList.remove('show');
                     }
                 });
             }
@@ -1387,18 +1678,21 @@
             renderMessages() {
                 const messagesList = document.getElementById('messagesList');
                 
-                if (this.messages.length === 0) {
+                // 应用过滤条件
+                let filteredMessages = this.applyMessageFilters(this.messages);
+                
+                if (filteredMessages.length === 0) {
                     messagesList.innerHTML = `
                         <div class="empty-messages">
                             <div>📭</div>
                             <div>暂无留言记录</div>
-                            <div style="font-size: 13px; margin-top: 10px;">发送报平安后可以查看家人留言</div>
+                            <div style="font-size: 13px; margin-top: 10px;">${this.filterConditions.signature || this.filterConditions.city ? '当前过滤条件下没有符合条件的留言' : '发送报平安后可以查看家人留言'}</div>
                         </div>
                     `;
                     return;
                 }
                 
-                let filteredMessages = [...this.messages];
+                // 根据当前筛选器进行额外筛选
                 const now = Date.now();
                 
                 switch (this.currentFilter) {
@@ -1440,26 +1734,104 @@
                     
                     const cityName = this.cityCodes[msg.l] || msg.cityName || msg.l || '未知';
                     const memberId = msg.id || msg.d || '未知';
+                    const signature = msg.sig || msg.signature || '匿名';
+                    const userMessage = msg.msg || msg.message || '';
                     
                     return `
                         <div class="message-item">
                             <div class="message-header">
-                                <div class="message-sender">成员 ${memberId.substring(0, 8)}</div>
+                                <div class="message-sender">${signature}</div>
                                 <div class="message-time">${dateStr} ${timeStr}</div>
                             </div>
+                            ${signature !== '匿名' ? `<div class="message-signature">${signature}</div>` : ''}
                             <div class="message-city">${cityName}</div>
-                            <div class="message-content">
-                                校验码: <strong>${msg.c}</strong>
-                            </div>
+                            ${userMessage ? `<div class="message-content">${this.escapeHtml(userMessage)}</div>` : ''}
                             <div class="message-footer">
                                 <div class="message-status ${statusClass}">
                                     ${statusText}
                                 </div>
-                                <div>IP: ${msg.i ? msg.i.substring(0, 6) + '...' : '未知'}</div>
+                                <div>ID: ${memberId.substring(0, 6)}... | IP: ${msg.i ? msg.i.substring(0, 6) + '...' : '未知'}</div>
                             </div>
                         </div>
                     `;
                 }).join('');
+            }
+            
+            applyMessageFilters(messages) {
+                let filtered = [...messages];
+                const now = Date.now();
+                
+                // 时间范围过滤
+                if (this.filterConditions.timeRange !== 'all') {
+                    const startTime = this.getTimeRangeStart(this.filterConditions.timeRange);
+                    filtered = filtered.filter(msg => {
+                        const msgTime = msg.t * 1000;
+                        return msgTime >= startTime;
+                    });
+                }
+                
+                // 署名过滤
+                if (this.filterConditions.signature.trim()) {
+                    const searchTerm = this.filterConditions.signature.toLowerCase().trim();
+                    filtered = filtered.filter(msg => {
+                        const signature = (msg.sig || msg.signature || '').toLowerCase();
+                        return signature.includes(searchTerm);
+                    });
+                }
+                
+                // 城市过滤
+                if (this.filterConditions.city) {
+                    filtered = filtered.filter(msg => msg.l === this.filterConditions.city);
+                }
+                
+                return filtered;
+            }
+            
+            getTimeRangeStart(range) {
+                const now = Date.now();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                switch (range) {
+                    case 'today':
+                        return today.getTime();
+                    case 'week':
+                        return today.getTime() - 7 * 24 * 60 * 60 * 1000;
+                    case 'month':
+                        return today.getTime() - 30 * 24 * 60 * 60 * 1000;
+                    default:
+                        return 0;
+                }
+            }
+            
+            applyFilters() {
+                this.filterConditions.timeRange = document.getElementById('filterTimeRange').value;
+                this.filterConditions.signature = document.getElementById('filterSignature').value;
+                this.filterConditions.city = document.getElementById('filterCity').value;
+                
+                this.renderMessages();
+                this.showMessage('✅ 已应用过滤条件', 'success');
+            }
+            
+            resetFilters() {
+                this.filterConditions = {
+                    timeRange: 'all',
+                    signature: '',
+                    city: ''
+                };
+                
+                document.getElementById('filterTimeRange').value = 'all';
+                document.getElementById('filterSignature').value = '';
+                document.getElementById('filterCity').value = '';
+                
+                this.renderMessages();
+                this.showMessage('✅ 过滤条件已重置', 'success');
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML.replace(/\n/g, '<br>');
             }
             
             async submitCheckin() {
@@ -1467,6 +1839,8 @@
                 
                 const isCorrect = this.isSequenceCorrect();
                 const verificationCode = this.generateVerificationCode();
+                const signature = document.getElementById('signature').value.trim() || '匿名';
+                const userMessage = document.getElementById('userMessage').value.trim();
                 
                 const checkinData = {
                     id: this.memberId,
@@ -1477,8 +1851,9 @@
                     i: this.ipAddress || '未知',
                     d: this.deviceFingerprint,
                     cityName: this.cityCodes[this.selectedCity] || '未知',
-                    correct: isCorrect
-                    // 不再发送seq字段
+                    correct: isCorrect,
+                    sig: signature, // 署名
+                    msg: userMessage // 留言
                 };
                 
                 this.showLoading('正在发送报平安信息...', '发送中');
@@ -1522,6 +1897,10 @@
                             document.getElementById('sequenceDisplay').textContent = '请点击按钮开始';
                             document.getElementById('verificationCode').textContent = '----';
                             document.getElementById('verificationCode').classList.remove('valid');
+                            document.getElementById('signature').value = '';
+                            document.getElementById('userMessage').value = '';
+                            document.getElementById('signatureCount').textContent = '0/10';
+                            document.getElementById('messageCount').textContent = '0/200';
                             document.getElementById('submitBtn').disabled = true;
                         }, 2000);
                     } else {
@@ -1557,6 +1936,16 @@
             }
             
             async sendTestCheckin() {
+                const signatures = ['爸爸', '妈妈', '小明', '小红', '爷爷', '奶奶'];
+                const messages = [
+                    '一切安好，勿念！',
+                    '今天天气很好，心情愉快。',
+                    '工作顺利，生活平安。',
+                    '思念大家，期待团聚。',
+                    '注意身体，多加休息。',
+                    '平安抵达目的地。'
+                ];
+                
                 const testData = {
                     id: 'TEST' + Math.random().toString(36).substring(2, 6).toUpperCase(),
                     t: Math.floor(Date.now() / 1000),
@@ -1566,7 +1955,9 @@
                     i: '192.168.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255),
                     d: 'TEST' + Math.random().toString(36).substring(2, 6).toUpperCase(),
                     cityName: ['台北市', '新北市', '桃园市', '新竹市'][Math.floor(Math.random() * 4)],
-                    correct: true
+                    correct: true,
+                    sig: signatures[Math.floor(Math.random() * signatures.length)],
+                    msg: messages[Math.floor(Math.random() * messages.length)]
                 };
                 
                 this.showLoading('正在发送测试数据...', '测试中');
@@ -1585,7 +1976,7 @@
                     }
                     
                     const data = await response.json();
-                    this.showMessage('✅ 测试数据发送成功！ID: ' + testData.id, 'success');
+                    this.showMessage('✅ 测试数据发送成功！署名: ' + testData.sig, 'success');
                     
                     setTimeout(() => this.loadMessages(), 1000);
                 } catch (error) {
@@ -1676,3 +2067,4 @@
     </script>
 </body>
 </html>
+[file content end]
