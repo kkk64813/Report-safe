@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭成员状态管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --safe-color: #2ecc71;
+            --transfer-color: #f39c12;
+            --medical-color: #e74c3c;
+            --light-bg: #f5f7fa;
+            --border-color: #ddd;
+            --text-color: #333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            border-radius: 0 0 15px 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: #f1c40f;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .announcement-bar {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .announcement-bar i {
+            color: #ff9800;
+            font-size: 1.5rem;
+        }
+        
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .member-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .member-header {
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .member-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-safe {
+            background-color: var(--safe-color);
+        }
+        
+        .status-transfer {
+            background-color: var(--transfer-color);
+        }
+        
+        .status-medical {
+            background-color: var(--medical-color);
+        }
+        
+        .member-body {
+            padding: 20px;
+        }
+        
+        .status-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .status-select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .status-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .custom-status-input {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .custom-status-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-success {
+            background-color: var(--safe-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .admin-btn-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .admin-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-btn:hover {
+            background-color: #1a252f;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .password-rule {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .success-message {
+            color: var(--safe-color);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .admin-panel {
+            display: none;
+        }
+        
+        .admin-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .admin-section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .member-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .member-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logs-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 999;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification-success {
+            background-color: var(--safe-color);
+        }
+        
+        .notification-error {
+            background-color: var(--medical-color);
+        }
+        
+        .notification-warning {
+            background-color: var(--transfer-color);
+        }
+        
+        .status-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .status-option {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .status-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .status-option.safe {
+            background-color: rgba(46, 204, 113, 0.2);
+        }
+        
+        .status-option.transfer {
+            background-color: rgba(243, 156, 18, 0.2);
+        }
+        
+        .status-option.medical {
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .members-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .members-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .member-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-home"></i> 家庭成员状态管理系统</h1>
+            <p class="subtitle">实时更新家庭成员安全状态，确保紧急情况下及时响应</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="announcement-bar">
+            <i class="fas fa-bullhorn"></i>
+            <div id="announcement-text">系统公告：请定期更新家庭成员状态，确保信息准确。</div>
+        </div>
+        
+        <div id="membersContainer" class="members-grid">
+            <!-- 家庭成员卡片将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="admin-btn-container">
+            <button id="adminBtn" class="btn admin-btn">
+                <i class="fas fa-user-shield"></i> 管理员入口
+            </button>
+        </div>
+    </div>
+    
+    <!-- 管理员登录模态框 -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-user-shield"></i> 管理员登录</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="loginSection">
+                    <div class="form-group">
+                        <label class="form-label" for="adminPassword">管理员密码</label>
+                        <input type="password" id="adminPassword" class="form-input" placeholder="请输入管理员密码">
+                        <p class="password-rule">密码规则：6-10位，仅允许数字与英文字母</p>
+                        <div id="loginError" class="error-message">密码错误，请重新输入</div>
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </button>
+                </div>
+                
+                <div id="adminPanel" class="admin-panel">
+                    <!-- 密码修改部分 -->
+                    <div class="admin-section">
+                        <h4 class="admin-section-title"><i class="fas fa-key"></i> 修改管理员密码</h4>
+                        <div class="form-group">
+                            <label class="form-label" for="oldPassword">旧密码</label>
+                            <input type="password" id="oldPassword" class="form-input" placeholder="请输入当前密码">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" class="form-input" placeholder="请输入新密码">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="confirmPassword">确认新密码</label>
+                            <input type="password" id="confirmPassword" class="form-input" placeholder="请再次输入新密码">
+                            <div id="passwordChangeError" class="error-message"></div>
+                            <div id="passwordChangeSuccess" class="success-message"></div>
+                        </div>
+                        <button id="changePasswordBtn" class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> 修改密码
+                        </button>
+                    </div>
+                    
+                    <!-- 成员管理部分 -->
+                    <div class="admin-section">
+                        <h4 class="admin-section-title"><i class="fas fa-users"></i> 管理家庭成员</h4>
+                        <div id="membersList" class="member-list">
+                            <!-- 成员列表将通过JavaScript动态生成 -->
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="newMemberName">新增成员</label>
+                            <input type="text" id="newMemberName" class="form-input" placeholder="请输入新成员姓名">
+                        </div>
+                        <button id="addMemberBtn" class="btn btn-success">
+                            <i class="fas fa-user-plus"></i> 添加成员
+                        </button>
+                    </div>
+                    
+                    <!-- 公告管理部分 -->
+                    <div class="admin-section">
+                        <h4 class="admin-section-title"><i class="fas fa-bullhorn"></i> 发布系统公告</h4>
+                        <div class="form-group">
+                            <label class="form-label" for="announcementInput">公告内容</label>
+                            <textarea id="announcementInput" class="form-input" rows="3" placeholder="请输入系统公告内容"></textarea>
+                        </div>
+                        <button id="updateAnnouncementBtn" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 发布公告
+                        </button>
+                    </div>
+                    
+                    <!-- 状态修改记录部分 -->
+                    <div class="admin-section">
+                        <h4 class="admin-section-title"><i class="fas fa-history"></i> 状态修改记录</h4>
+                        <div id="logsContainer" class="logs-container">
+                            <!-- 日志将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <button id="logoutBtn" class="btn btn-secondary" style="width: 100%; margin-top: 20px;">
+                        <i class="fas fa-sign-out-alt"></i> 退出管理员模式
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 状态更新确认模态框 -->
+    <div id="statusUpdateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-check-circle"></i> 状态更新确认</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要将 <strong id="confirmMemberName"></strong> 的状态更新为 <strong id="confirmStatus"></strong> 吗？</p>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label" for="updateNotes">更新备注 (可选)</label>
+                    <textarea id="updateNotes" class="form-input" rows="2" placeholder="可输入状态更新的原因或其他备注信息"></textarea>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button id="confirmUpdateBtn" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-check"></i> 确认更新
+                    </button>
+                    <button id="cancelUpdateBtn" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2023 家庭成员状态管理系统 | 设计用于紧急情况下的家庭成员状态跟踪</p>
+            <p>Worker 端点: <code>https://family-status.mgjack13.workers.dev/</code> | KV 名称: <code>family-status</code></p>
+        </div>
+    </footer>
+    
+    <!-- 通知组件 -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">操作成功</span>
+    </div>
+    
+    <script>
+        // 系统配置
+        const CONFIG = {
+            WORKER_URL: 'https://family-status.mgjack13.workers.dev/',
+            DEFAULT_STATUSES: ['安全', '须转移', '须医疗帮助'],
+            INITIAL_MEMBERS: ['爸爸', '妈妈', '爷爷', '奶奶', '孩子'],
+            DEFAULT_ANNOUNCEMENT: '系统公告：请定期更新家庭成员状态，确保信息准确。',
+            DEFAULT_PASSWORD: '820421'
+        };
+        
+        // 状态常量
+        const Status = {
+            SAFE: '安全',
+            TRANSFER: '须转移',
+            MEDICAL: '须医疗帮助'
+        };
+        
+        // 状态颜色映射
+        const statusColors = {
+            [Status.SAFE]: 'status-safe',
+            [Status.TRANSFER]: 'status-transfer',
+            [Status.MEDICAL]: 'status-medical'
+        };
+        
+        // 应用程序状态
+        const AppState = {
+            members: [],
+            announcement: CONFIG.DEFAULT_ANNOUNCEMENT,
+            logs: [],
+            isAdmin: false,
+            currentMemberUpdate: null,
+            adminToken: null
+        };
+        
+        // DOM元素
+        const domElements = {
+            membersContainer: document.getElementById('membersContainer'),
+            adminBtn: document.getElementById('adminBtn'),
+            adminLoginModal: document.getElementById('adminLoginModal'),
+            statusUpdateModal: document.getElementById('statusUpdateModal'),
+            notification: document.getElementById('notification'),
+            notificationText: document.getElementById('notificationText'),
+            announcementText: document.getElementById('announcementText'),
+            loginSection: document.getElementById('loginSection'),
+            adminPanel: document.getElementById('adminPanel'),
+            adminPassword: document.getElementById('adminPassword'),
+            loginBtn: document.getElementById('loginBtn'),
+            loginError: document.getElementById('loginError'),
+            changePasswordBtn: document.getElementById('changePasswordBtn'),
+            oldPassword: document.getElementById('oldPassword'),
+            newPassword: document.getElementById('newPassword'),
+            confirmPassword: document.getElementById('confirmPassword'),
+            passwordChangeError: document.getElementById('passwordChangeError'),
+            passwordChangeSuccess: document.getElementById('passwordChangeSuccess'),
+            membersList: document.getElementById('membersList'),
+            newMemberName: document.getElementById('newMemberName'),
+            addMemberBtn: document.getElementById('addMemberBtn'),
+            announcementInput: document.getElementById('announcementInput'),
+            updateAnnouncementBtn: document.getElementById('updateAnnouncementBtn'),
+            logsContainer: document.getElementById('logsContainer'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            confirmMemberName: document.getElementById('confirmMemberName'),
+            confirmStatus: document.getElementById('confirmStatus'),
+            confirmUpdateBtn: document.getElementById('confirmUpdateBtn'),
+            cancelUpdateBtn: document.getElementById('cancelUpdateBtn'),
+            updateNotes: document.getElementById('updateNotes')
+        };
+        
+        // 关闭模态框的按钮
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        
+        // 初始化应用程序
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            setupEventListeners();
+        });
+        
+        // 初始化应用程序数据
+        function initApp() {
+            // 从本地存储加载数据，如果没有则使用默认值
+            const savedMembers = localStorage.getItem('familyMembers');
+            const savedAnnouncement = localStorage.getItem('announcement');
+            const savedLogs = localStorage.getItem('statusLogs');
+            
+            if (savedMembers) {
+                AppState.members = JSON.parse(savedMembers);
+            } else {
+                // 初始化默认成员
+                AppState.members = CONFIG.INITIAL_MEMBERS.map(name => ({
+                    id: generateId(),
+                    name: name,
+                    status: Status.SAFE,
+                    lastUpdated: new Date().toISOString()
+                }));
+                saveMembersToLocalStorage();
+            }
+            
+            if (savedAnnouncement) {
+                AppState.announcement = savedAnnouncement;
+                domElements.announcementText.textContent = AppState.announcement;
+            }
+            
+            if (savedLogs) {
+                AppState.logs = JSON.parse(savedLogs);
+            } else {
+                // 初始化示例日志
+                AppState.logs = [
+                    {
+                        id: generateId(),
+                        memberName: '爸爸',
+                        oldStatus: Status.SAFE,
+                        newStatus: Status.TRANSFER,
+                        timestamp: new Date(Date.now() - 3600000).toISOString(),
+                        notes: '收到撤离通知',
+                        ip: '192.168.1.100'
+                    },
+                    {
+                        id: generateId(),
+                        memberName: '妈妈',
+                        oldStatus: Status.SAFE,
+                        newStatus: Status.MEDICAL,
+                        timestamp: new Date(Date.now() - 7200000).toISOString(),
+                        notes: '感觉身体不适',
+                        ip: '192.168.1.101'
+                    }
+                ];
+                saveLogsToLocalStorage();
+            }
+            
+            // 渲染成员卡片
+            renderMemberCards();
+            
+            // 如果之前是管理员模式，恢复
+            const savedAdminToken = sessionStorage.getItem('adminToken');
+            if (savedAdminToken) {
+                AppState.adminToken = savedAdminToken;
+                AppState.isAdmin = true;
+                showAdminPanel();
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 管理员按钮点击事件
+            domElements.adminBtn.addEventListener('click', showAdminLoginModal);
+            
+            // 关闭模态框按钮
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    button.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+            
+            // 管理员登录
+            domElements.loginBtn.addEventListener('click', handleAdminLogin);
+            
+            // 密码修改
+            domElements.changePasswordBtn.addEventListener('click', handlePasswordChange);
+            
+            // 添加成员
+            domElements.addMemberBtn.addEventListener('click', handleAddMember);
+            
+            // 发布公告
+            domElements.updateAnnouncementBtn.addEventListener('click', handleUpdateAnnouncement);
+            
+            // 退出管理员模式
+            domElements.logoutBtn.addEventListener('click', handleLogout);
+            
+            // 状态更新确认
+            domElements.confirmUpdateBtn.addEventListener('click', confirmStatusUpdate);
+            domElements.cancelUpdateBtn.addEventListener('click', () => {
+                domElements.statusUpdateModal.style.display = 'none';
+            });
+            
+            // 允许按Enter键登录
+            domElements.adminPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleAdminLogin();
+                }
+            });
+        }
+        
+        // 渲染成员卡片
+        function renderMemberCards() {
+            domElements.membersContainer.innerHTML = '';
+            
+            AppState.members.forEach(member => {
+                const card = createMemberCard(member);
+                domElements.membersContainer.appendChild(card);
+            });
+        }
+        
+        // 创建成员卡片
+        function createMemberCard(member) {
+            const card = document.createElement('div');
+            card.className = 'member-card';
+            card.dataset.memberId = member.id;
+            
+            const statusClass = statusColors[member.status] || 'status-safe';
+            
+            card.innerHTML = `
+                <div class="member-header">
+                    <div class="member-name">${member.name}</div>
+                    <div class="status-badge ${statusClass}">${member.status}</div>
+                </div>
+                <div class="member-body">
+                    <div class="status-form">
+                        <div class="status-options">
+                            <div class="status-option safe ${member.status === Status.SAFE ? 'selected' : ''}" data-status="${Status.SAFE}">
+                                <i class="fas fa-check-circle"></i> ${Status.SAFE}
+                            </div>
+                            <div class="status-option transfer ${member.status === Status.TRANSFER ? 'selected' : ''}" data-status="${Status.TRANSFER}">
+                                <i class="fas fa-exclamation-triangle"></i> ${Status.TRANSFER}
+                            </div>
+                            <div class="status-option medical ${member.status === Status.MEDICAL ? 'selected' : ''}" data-status="${Status.MEDICAL}">
+                                <i class="fas fa-ambulance"></i> ${Status.MEDICAL}
+                            </div>
+                        </div>
+                        <div class="custom-status-container" style="display: none;">
+                            <input type="text" class="custom-status-input" placeholder="请输入自定义状态">
+                        </div>
+                        <div class="custom-status-toggle" style="text-align: center; margin: 10px 0;">
+                            <a href="#" class="toggle-custom" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">
+                                <i class="fas fa-plus-circle"></i> 自定义状态
+                            </a>
+                        </div>
+                        <button class="btn btn-primary save-status-btn" data-member-id="${member.id}">
+                            <i class="fas fa-save"></i> 保存状态
+                        </button>
+                        <div class="last-updated" style="margin-top: 10px; font-size: 0.85rem; color: #666; text-align: center;">
+                            最后更新: ${formatDate(member.lastUpdated)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加状态选项点击事件
+            const statusOptions = card.querySelectorAll('.status-option');
+            statusOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 取消其他选项的选中状态
+                    statusOptions.forEach(opt => opt.classList.remove('selected'));
+                    // 选中当前选项
+                    this.classList.add('selected');
+                    
+                    // 隐藏自定义状态输入框
+                    const customContainer = card.querySelector('.custom-status-container');
+                    customContainer.style.display = 'none';
+                    
+                    // 更新自定义状态链接文本
+                    const customLink = card.querySelector('.toggle-custom');
+                    customLink.innerHTML = '<i class="fas fa-plus-circle"></i> 自定义状态';
+                });
+            });
+            
+            // 自定义状态切换
+            const customLink = card.querySelector('.toggle-custom');
+            const customContainer = card.querySelector('.custom-status-container');
+            const customInput = card.querySelector('.custom-status-input');
+            
+            customLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (customContainer.style.display === 'none') {
+                    customContainer.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-minus-circle"></i> 使用预设状态';
+                    
+                    // 取消预设状态的选择
+                    statusOptions.forEach(opt => opt.classList.remove('selected'));
+                } else {
+                    customContainer.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-plus-circle"></i> 自定义状态';
+                    
+                    // 如果没有选择预设状态，则默认选择"安全"
+                    const selected = card.querySelector('.status-option.selected');
+                    if (!selected) {
+                        statusOptions[0].classList.add('selected');
+                    }
+                }
+            });
+            
+            // 保存状态按钮点击事件
+            const saveBtn = card.querySelector('.save-status-btn');
+            saveBtn.addEventListener('click', function() {
+                const memberId = this.dataset.memberId;
+                const member = AppState.members.find(m => m.id === memberId);
+                
+                // 获取选择的状态
+                let selectedStatus = '';
+                const selectedOption = card.querySelector('.status-option.selected');
+                
+                if (selectedOption) {
+                    selectedStatus = selectedOption.dataset.status;
+                } else if (customContainer.style.display === 'block' && customInput.value.trim()) {
+                    selectedStatus = customInput.value.trim();
+                } else {
+                    showNotification('请选择或输入状态', 'error');
+                    return;
+                }
+                
+                // 显示确认模态框
+                domElements.confirmMemberName.textContent = member.name;
+                domElements.confirmStatus.textContent = selectedStatus;
+                domElements.statusUpdateModal.style.display = 'flex';
+                domElements.updateNotes.value = '';
+                
+                // 保存当前更新的成员信息
+                AppState.currentMemberUpdate = {
+                    memberId: memberId,
+                    memberName: member.name,
+                    newStatus: selectedStatus,
+                    oldStatus: member.status
+                };
+            });
+            
+            return card;
+        }
+        
+        // 显示管理员登录模态框
+        function showAdminLoginModal() {
+            domElements.adminLoginModal.style.display = 'flex';
+            domElements.adminPassword.value = '';
+            domElements.loginError.style.display = 'none';
+            
+            if (AppState.isAdmin) {
+                showAdminPanel();
+            } else {
+                domElements.loginSection.style.display = 'block';
+                domElements.adminPanel.style.display = 'none';
+            }
+        }
+        
+        // 处理管理员登录
+        async function handleAdminLogin() {
+            const password = domElements.adminPassword.value.trim();
+            
+            // 前端格式校验
+            if (!validatePasswordFormat(password)) {
+                domElements.loginError.textContent = '密码格式不正确，应为6-10位数字与英文字母';
+                domElements.loginError.style.display = 'block';
+                return;
+            }
+            
+            // 显示加载状态
+            domElements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 验证中...';
+            domElements.loginBtn.disabled = true;
+            
+            try {
+                // 在实际应用中，这里应该调用Cloudflare Worker验证密码
+                // 由于Worker未实现，这里使用模拟验证
+                const isValid = await validatePasswordWithWorker(password);
+                
+                if (isValid) {
+                    // 登录成功
+                    AppState.isAdmin = true;
+                    AppState.adminToken = generateToken();
+                    sessionStorage.setItem('adminToken', AppState.adminToken);
+                    
+                    domElements.loginSection.style.display = 'none';
+                    showAdminPanel();
+                    showNotification('管理员登录成功', 'success');
+                } else {
+                    // 登录失败
+                    domElements.loginError.textContent = '密码错误，请重新输入';
+                    domElements.loginError.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                domElements.loginError.textContent = '登录失败，请稍后重试';
+                domElements.loginError.style.display = 'block';
+            } finally {
+                // 恢复按钮状态
+                domElements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+                domElements.loginBtn.disabled = false;
+            }
+        }
+        
+        // 显示管理员面板
+        function showAdminPanel() {
+            domElements.adminPanel.style.display = 'block';
+            
+            // 渲染成员列表
+            renderAdminMembersList();
+            
+            // 设置公告输入框
+            domElements.announcementInput.value = AppState.announcement;
+            
+            // 渲染日志
+            renderLogs();
+            
+            // 清除密码输入框
+            domElements.oldPassword.value = '';
+            domElements.newPassword.value = '';
+            domElements.confirmPassword.value = '';
+            domElements.passwordChangeError.style.display = 'none';
+            domElements.passwordChangeSuccess.style.display = 'none';
+        }
+        
+        // 渲染管理员成员列表
+        function renderAdminMembersList() {
+            domElements.membersList.innerHTML = '';
+            
+            AppState.members.forEach(member => {
+                const memberItem = document.createElement('div');
+                memberItem.className = 'member-item';
+                memberItem.innerHTML = `
+                    <span>${member.name}</span>
+                    <button class="btn btn-danger delete-member-btn" data-member-id="${member.id}" style="padding: 5px 10px; font-size: 0.9rem;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                // 添加删除按钮事件
+                const deleteBtn = memberItem.querySelector('.delete-member-btn');
+                deleteBtn.addEventListener('click', function() {
+                    if (AppState.members.length <= 1) {
+                        showNotification('至少需要保留一个成员', 'error');
+                        return;
+                    }
+                    
+                    if (confirm(`确定要删除成员 "${member.name}" 吗？`)) {
+                        deleteMember(member.id);
+                    }
+                });
+                
+                domElements.membersList.appendChild(memberItem);
+            });
+        }
+        
+        // 处理密码修改
+        async function handlePasswordChange() {
+            const oldPassword = domElements.oldPassword.value.trim();
+            const newPassword = domElements.newPassword.value.trim();
+            const confirmPassword = domElements.confirmPassword.value.trim();
+            
+            // 验证输入
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                domElements.passwordChangeError.textContent = '所有字段都必须填写';
+                domElements.passwordChangeError.style.display = 'block';
+                domElements.passwordChangeSuccess.style.display = 'none';
+                return;
+            }
+            
+            if (!validatePasswordFormat(newPassword)) {
+                domElements.passwordChangeError.textContent = '新密码格式不正确，应为6-10位数字与英文字母';
+                domElements.passwordChangeError.style.display = 'block';
+                domElements.passwordChangeSuccess.style.display = 'none';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                domElements.passwordChangeError.textContent = '两次输入的新密码不一致';
+                domElements.passwordChangeError.style.display = 'block';
+                domElements.passwordChangeSuccess.style.display = 'none';
+                return;
+            }
+            
+            // 显示加载状态
+            domElements.changePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 修改中...';
+            domElements.changePasswordBtn.disabled = true;
+            
+            try {
+                // 在实际应用中，这里应该调用Cloudflare Worker验证旧密码并更新密码
+                // 由于Worker未实现，这里使用模拟验证
+                const isValid = await validatePasswordWithWorker(oldPassword);
+                
+                if (isValid) {
+                    // 密码修改成功
+                    // 在实际应用中，这里应该调用Cloudflare Worker更新密码哈希
+                    
+                    domElements.passwordChangeError.style.display = 'none';
+                    domElements.passwordChangeSuccess.textContent = '密码修改成功';
+                    domElements.passwordChangeSuccess.style.display = 'block';
+                    
+                    // 清除输入框
+                    domElements.oldPassword.value = '';
+                    domElements.newPassword.value = '';
+                    domElements.confirmPassword.value = '';
+                    
+                    showNotification('管理员密码修改成功', 'success');
+                } else {
+                    // 旧密码错误
+                    domElements.passwordChangeError.textContent = '旧密码错误';
+                    domElements.passwordChangeError.style.display = 'block';
+                    domElements.passwordChangeSuccess.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('密码修改错误:', error);
+                domElements.passwordChangeError.textContent = '密码修改失败，请稍后重试';
+                domElements.passwordChangeError.style.display = 'block';
+                domElements.passwordChangeSuccess.style.display = 'none';
+            } finally {
+                // 恢复按钮状态
+                domElements.changePasswordBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 修改密码';
+                domElements.changePasswordBtn.disabled = false;
+            }
+        }
+        
+        // 处理添加成员
+        function handleAddMember() {
+            const newMemberName = domElements.newMemberName.value.trim();
+            
+            if (!newMemberName) {
+                showNotification('请输入成员姓名', 'error');
+                return;
+            }
+            
+            // 检查是否已存在同名成员
+            if (AppState.members.some(member => member.name === newMemberName)) {
+                showNotification('该成员已存在', 'error');
+                return;
+            }
+            
+            // 添加新成员
+            const newMember = {
+                id: generateId(),
+                name: newMemberName,
+                status: Status.SAFE,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            AppState.members.push(newMember);
+            saveMembersToLocalStorage();
+            
+            // 重新渲染成员卡片和管理员成员列表
+            renderMemberCards();
+            renderAdminMembersList();
+            
+            // 清空输入框
+            domElements.newMemberName.value = '';
+            
+            // 记录日志
+            addLog({
+                memberName: newMemberName,
+                oldStatus: '无',
+                newStatus: Status.SAFE,
+                notes: '新增成员',
+                ip: '管理员操作'
+            });
+            
+            showNotification(`已添加新成员: ${newMemberName}`, 'success');
+        }
+        
+        // 删除成员
+        function deleteMember(memberId) {
+            const memberIndex = AppState.members.findIndex(m => m.id === memberId);
+            
+            if (memberIndex === -1) return;
+            
+            const memberName = AppState.members[memberIndex].name;
+            
+            // 删除成员
+            AppState.members.splice(memberIndex, 1);
+            saveMembersToLocalStorage();
+            
+            // 重新渲染
+            renderMemberCards();
+            renderAdminMembersList();
+            
+            // 记录日志
+            addLog({
+                memberName: memberName,
+                oldStatus: '已删除',
+                newStatus: '无',
+                notes: '删除成员',
+                ip: '管理员操作'
+            });
+            
+            showNotification(`已删除成员: ${memberName}`, 'success');
+        }
+        
+        // 处理更新公告
+        function handleUpdateAnnouncement() {
+            const newAnnouncement = domElements.announcementInput.value.trim();
+            
+            if (!newAnnouncement) {
+                showNotification('请输入公告内容', 'error');
+                return;
+            }
+            
+            AppState.announcement = newAnnouncement;
+            domElements.announcementText.textContent = newAnnouncement;
+            localStorage.setItem('announcement', newAnnouncement);
+            
+            showNotification('系统公告已更新', 'success');
+        }
+        
+        // 确认状态更新
+        function confirmStatusUpdate() {
+            if (!AppState.currentMemberUpdate) return;
+            
+            const { memberId, memberName, newStatus, oldStatus } = AppState.currentMemberUpdate;
+            const notes = domElements.updateNotes.value.trim();
+            
+            // 更新成员状态
+            const member = AppState.members.find(m => m.id === memberId);
+            if (member) {
+                member.status = newStatus;
+                member.lastUpdated = new Date().toISOString();
+                saveMembersToLocalStorage();
+                
+                // 重新渲染成员卡片
+                renderMemberCards();
+                
+                // 记录日志
+                addLog({
+                    memberName: memberName,
+                    oldStatus: oldStatus,
+                    newStatus: newStatus,
+                    notes: notes || '状态更新',
+                    ip: getSimulatedIP()
+                });
+                
+                // 如果管理员已登录，更新日志显示
+                if (AppState.isAdmin) {
+                    renderLogs();
+                }
+                
+                showNotification(`${memberName} 状态已更新为 ${newStatus}`, 'success');
+            }
+            
+            // 关闭模态框
+            domElements.statusUpdateModal.style.display = 'none';
+            AppState.currentMemberUpdate = null;
+        }
+        
+        // 处理退出管理员模式
+        function handleLogout() {
+            AppState.isAdmin = false;
+            AppState.adminToken = null;
+            sessionStorage.removeItem('adminToken');
+            
+            domElements.adminLoginModal.style.display = 'none';
+            showNotification('已退出管理员模式', 'success');
+        }
+        
+        // 渲染日志
+        function renderLogs() {
+            domElements.logsContainer.innerHTML = '';
+            
+            // 按时间倒序排列日志
+            const sortedLogs = [...AppState.logs].sort((a, b) => 
+                new Date(b.timestamp) - new Date(a.timestamp)
+            );
+            
+            sortedLogs.forEach(log => {
+                const logItem = document.createElement('div');
+                logItem.className = 'log-item';
+                
+                const timeString = formatDate(log.timestamp, true);
+                
+                logItem.innerHTML = `
+                    <div>
+                        <strong>${log.memberName}</strong>: 
+                        ${log.oldStatus} → ${log.newStatus}
+                        ${log.notes ? ` (${log.notes})` : ''}
+                    </div>
+                    <div>
+                        <span class="log-time">${timeString}</span>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">IP: ${log.ip}</div>
+                    </div>
+                `;
+                
+                domElements.logsContainer.appendChild(logItem);
+            });
+        }
+        
+        // 添加日志
+        function addLog(logData) {
+            const log = {
+                id: generateId(),
+                ...logData,
+                timestamp: new Date().toISOString()
+            };
+            
+            AppState.logs.push(log);
+            
+            // 限制日志数量，最多保留100条
+            if (AppState.logs.length > 100) {
+                AppState.logs = AppState.logs.slice(-100);
+            }
+            
+            saveLogsToLocalStorage();
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = domElements.notification;
+            const notificationText = domElements.notificationText;
+            
+            notificationText.textContent = message;
+            
+            // 设置通知类型
+            notification.className = 'notification';
+            notification.classList.add(`notification-${type}`);
+            
+            // 显示通知
+            notification.classList.add('show');
+            
+            // 3秒后隐藏通知
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 辅助函数
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
+        function formatDate(dateString, includeTime = false) {
+            const date = new Date(dateString);
+            
+            if (includeTime) {
+                return date.toLocaleString('zh-CN');
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
+        
+        function saveMembersToLocalStorage() {
+            localStorage.setItem('familyMembers', JSON.stringify(AppState.members));
+        }
+        
+        function saveLogsToLocalStorage() {
+            localStorage.setItem('statusLogs', JSON.stringify(AppState.logs));
+        }
+        
+        function validatePasswordFormat(password) {
+            // 密码规则：6-10位，仅允许数字与英文字母
+            const regex = /^[A-Za-z0-9]{6,10}$/;
+            return regex.test(password);
+        }
+        
+        async function validatePasswordWithWorker(password) {
+            // 在实际应用中，这里应该调用Cloudflare Worker验证密码
+            // 由于Worker未实现，这里使用模拟验证
+            // 注意：真实环境中不应该在前端包含密码验证逻辑
+            
+            // 模拟网络请求延迟
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 模拟验证：检查是否是默认密码
+            // 在实际应用中，Worker会使用存储的哈希值进行验证
+            return password === CONFIG.DEFAULT_PASSWORD;
+        }
+        
+        function generateToken() {
+            return 'token_' + Math.random().toString(36).substr(2) + Date.now().toString(36);
+        }
+        
+        function getSimulatedIP() {
+            // 生成模拟IP地址
+            return `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+        }
+    </script>
+</body>
+</html>
