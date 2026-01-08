@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .notice-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            min-height: 200px;
+        }
+        
+        .notice-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        
+        .empty-notice {
+            color: #7f8c8d;
+            font-style: italic;
+            text-align: center;
+            padding: 50px 0;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button.danger {
+            background: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background: #c0392b;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .char-count {
+            text-align: right;
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: none;
+            color: #7f8c8d;
+        }
+        
+        .tab.active {
+            border-color: #ddd;
+            border-bottom-color: white;
+            background: white;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+        
+        .admin-controls.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .notice-container {
+                padding: 20px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .admin-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📢 公告系统</h1>
+        <button id="adminBtn">管理员登录</button>
+    </header>
+    
+    <main>
+        <div class="notice-container">
+            <div id="noticeContent" class="notice-content">
+                正在加载公告...
+            </div>
+        </div>
+        
+        <div class="admin-controls" id="adminControls">
+            <button id="editNoticeBtn">编辑公告</button>
+            <button id="deleteNoticeBtn" class="danger">删除公告</button>
+            <button id="changePasswordBtn">修改密码</button>
+            <button id="logoutBtn">退出登录</button>
+        </div>
+    </main>
+    
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>管理员登录</h2>
+            <div class="form-group">
+                <label for="loginPassword">密码</label>
+                <input type="password" id="loginPassword" placeholder="请输入管理员密码">
+                <div class="error-message" id="loginError"></div>
+            </div>
+            <div class="form-actions">
+                <button id="loginBtn" style="flex: 1">登录</button>
+                <button id="cancelLoginBtn" style="background: #95a5a6">取消</button>
+            </div>
+            <div class="char-count">
+                密码规则：6-10位，仅限数字和字母
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑公告模态框 -->
+    <div class="modal" id="editNoticeModal">
+        <div class="modal-content">
+            <h2>编辑公告</h2>
+            <div class="form-group">
+                <label for="noticeText">公告内容 (最多1000字)</label>
+                <textarea id="noticeText" placeholder="请输入公告内容..."></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span>/1000
+                </div>
+                <div class="error-message" id="editError"></div>
+                <div class="success-message" id="editSuccess"></div>
+            </div>
+            <div class="form-actions">
+                <button id="publishBtn" style="flex: 1">发布公告</button>
+                <button id="cancelEditBtn" style="background: #95a5a6">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 修改密码模态框 -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <h2>修改密码</h2>
+            <div class="form-group">
+                <label for="oldPassword">当前密码</label>
+                <input type="password" id="oldPassword" placeholder="请输入当前密码">
+            </div>
+            <div class="form-group">
+                <label for="newPassword">新密码</label>
+                <input type="password" id="newPassword" placeholder="6-10位数字或字母">
+                <div class="error-message" id="passwordError"></div>
+                <div class="success-message" id="passwordSuccess"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">确认新密码</label>
+                <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+            </div>
+            <div class="form-actions">
+                <button id="savePasswordBtn" style="flex: 1">保存密码</button>
+                <button id="cancelPasswordBtn" style="background: #95a5a6">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置 - 更新为您的 Worker 地址
+        const API_BASE = 'https://notice-board.mgjack13.workers.dev';
+        
+        // 状态管理
+        let isLoggedIn = false;
+        let authToken = null;
+        let currentNotice = '';
+        
+        // DOM 元素
+        const adminBtn = document.getElementById('adminBtn');
+        const adminControls = document.getElementById('adminControls');
+        const noticeContent = document.getElementById('noticeContent');
+        
+        // 模态框
+        const loginModal = document.getElementById('loginModal');
+        const editNoticeModal = document.getElementById('editNoticeModal');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        
+        // 登录相关
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const cancelLoginBtn = document.getElementById('cancelLoginBtn');
+        const loginError = document.getElementById('loginError');
+        
+        // 编辑公告相关
+        const noticeText = document.getElementById('noticeText');
+        const charCount = document.getElementById('charCount');
+        const publishBtn = document.getElementById('publishBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editError = document.getElementById('editError');
+        const editSuccess = document.getElementById('editSuccess');
+        
+        // 控制按钮
+        const editNoticeBtn = document.getElementById('editNoticeBtn');
+        const deleteNoticeBtn = document.getElementById('deleteNoticeBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        // 修改密码相关
+        const oldPassword = document.getElementById('oldPassword');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const savePasswordBtn = document.getElementById('savePasswordBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+        const passwordError = document.getElementById('passwordError');
+        const passwordSuccess = document.getElementById('passwordSuccess');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotice();
+            setupEventListeners();
+            
+            // 检查本地存储中是否有登录状态
+            const savedToken = localStorage.getItem('noticeAdminToken');
+            const savedLoginState = localStorage.getItem('noticeIsLoggedIn');
+            
+            if (savedToken && savedLoginState === 'true') {
+                // 简化处理：实际应该验证token有效性
+                isLoggedIn = true;
+                authToken = savedToken;
+                showAdminControls();
+                adminBtn.textContent = '管理员已登录';
+            }
+        });
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 管理员按钮
+            adminBtn.addEventListener('click', showLoginModal);
+            
+            // 登录相关
+            loginBtn.addEventListener('click', handleLogin);
+            cancelLoginBtn.addEventListener('click', () => hideModal(loginModal));
+            loginPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            
+            // 编辑公告相关
+            editNoticeBtn.addEventListener('click', showEditModal);
+            publishBtn.addEventListener('click', publishNotice);
+            cancelEditBtn.addEventListener('click', () => hideModal(editNoticeModal));
+            noticeText.addEventListener('input', updateCharCount);
+            
+            // 删除公告
+            deleteNoticeBtn.addEventListener('click', deleteNotice);
+            
+            // 修改密码相关
+            changePasswordBtn.addEventListener('click', showChangePasswordModal);
+            savePasswordBtn.addEventListener('click', changePassword);
+            cancelPasswordBtn.addEventListener('click', () => hideModal(changePasswordModal));
+            
+            // 退出登录
+            logoutBtn.addEventListener('click', logout);
+        }
+        
+        // 加载公告
+        async function loadNotice() {
+            try {
+                const response = await fetch(`${API_BASE}/api/notice`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentNotice = data.notice || '';
+                    noticeContent.innerHTML = currentNotice 
+                        ? currentNotice.replace(/\n/g, '<br>')
+                        : '<div class="empty-notice">暂无公告</div>';
+                }
+            } catch (error) {
+                console.error('加载公告失败:', error);
+                noticeContent.innerHTML = '<div class="empty-notice">加载公告失败，请刷新页面</div>';
+            }
+        }
+        
+        // 显示登录模态框
+        function showLoginModal() {
+            if (isLoggedIn) {
+                if (confirm('您已登录，是否要退出？')) {
+                    logout();
+                }
+                return;
+            }
+            
+            loginPassword.value = '';
+            loginError.textContent = '';
+            showModal(loginModal);
+        }
+        
+        // 处理登录
+        async function handleLogin() {
+            const password = loginPassword.value.trim();
+            
+            // 前端格式验证
+            if (!password) {
+                loginError.textContent = '请输入密码';
+                return;
+            }
+            
+            if (!/^[A-Za-z0-9]{6,10}$/.test(password)) {
+                loginError.textContent = '密码必须是6-10位的字母或数字';
+                return;
+            }
+            
+            loginError.textContent = '';
+            loginBtn.textContent = '登录中...';
+            loginBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isLoggedIn = true;
+                    authToken = data.token;
+                    
+                    // 保存登录状态到本地存储
+                    localStorage.setItem('noticeAdminToken', authToken);
+                    localStorage.setItem('noticeIsLoggedIn', 'true');
+                    
+                    hideModal(loginModal);
+                    showAdminControls();
+                    showMessage('登录成功', 'success');
+                } else {
+                    loginError.textContent = data.error || '登录失败';
+                }
+            } catch (error) {
+                console.error('登录失败:', error);
+                loginError.textContent = '登录失败，请稍后重试';
+            } finally {
+                loginBtn.textContent = '登录';
+                loginBtn.disabled = false;
+            }
+        }
+        
+        // 显示编辑模态框
+        function showEditModal() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            noticeText.value = currentNotice;
+            editError.textContent = '';
+            editSuccess.textContent = '';
+            updateCharCount();
+            showModal(editNoticeModal);
+        }
+        
+        // 更新字符计数
+        function updateCharCount() {
+            const count = noticeText.value.length;
+            charCount.textContent = count;
+            charCount.style.color = count > 1000 ? '#e74c3c' : '#7f8c8d';
+        }
+        
+        // 发布公告
+        async function publishNotice() {
+            const content = noticeText.value.trim();
+            
+            if (content.length > 1000) {
+                editError.textContent = '公告内容不能超过1000字';
+                return;
+            }
+            
+            if (!content) {
+                editError.textContent = '公告内容不能为空';
+                return;
+            }
+            
+            editError.textContent = '';
+            editSuccess.textContent = '';
+            publishBtn.textContent = '发布中...';
+            publishBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/notice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        action: 'publish',
+                        content
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    editSuccess.textContent = data.message;
+                    currentNotice = content;
+                    setTimeout(() => {
+                        hideModal(editNoticeModal);
+                        loadNotice();
+                        showMessage('公告发布成功', 'success');
+                    }, 1500);
+                } else {
+                    editError.textContent = data.error || '发布失败';
+                    if (data.error === 'Unauthorized') {
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error('发布失败:', error);
+                editError.textContent = '发布失败，请稍后重试';
+            } finally {
+                publishBtn.textContent = '发布公告';
+                publishBtn.disabled = false;
+            }
+        }
+        
+        // 删除公告
+        async function deleteNotice() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            if (!confirm('确定要删除当前公告吗？此操作不可撤销。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/notice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: 'delete' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentNotice = '';
+                    loadNotice();
+                    showMessage('公告已删除', 'success');
+                } else {
+                    showMessage(data.error || '删除失败', 'error');
+                    if (data.error === 'Unauthorized') {
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                showMessage('删除失败，请稍后重试', 'error');
+            }
+        }
+        
+        // 显示修改密码模态框
+        function showChangePasswordModal() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            oldPassword.value = '';
+            newPassword.value = '';
+            confirmPassword.value = '';
+            passwordError.textContent = '';
+            passwordSuccess.textContent = '';
+            showModal(changePasswordModal);
+        }
+        
+        // 修改密码
+        async function changePassword() {
+            const oldPass = oldPassword.value.trim();
+            const newPass = newPassword.value.trim();
+            const confirmPass = confirmPassword.value.trim();
+            
+            // 前端验证
+            if (!oldPass || !newPass || !confirmPass) {
+                passwordError.textContent = '请填写所有密码字段';
+                return;
+            }
+            
+            if (newPass !== confirmPass) {
+                passwordError.textContent = '两次输入的新密码不一致';
+                return;
+            }
+            
+            if (!/^[A-Za-z0-9]{6,10}$/.test(newPass)) {
+                passwordError.textContent = '新密码必须是6-10位的字母或数字';
+                return;
+            }
+            
+            passwordError.textContent = '';
+            savePasswordBtn.textContent = '保存中...';
+            savePasswordBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        oldPassword: oldPass,
+                        newPassword: newPass
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    passwordSuccess.textContent = data.message;
+                    setTimeout(() => {
+                        hideModal(changePasswordModal);
+                        logout();
+                        showMessage('密码修改成功，请重新登录', 'success');
+                    }, 1500);
+                } else {
+                    passwordError.textContent = data.error || '修改失败';
+                    if (data.error === 'Unauthorized') {
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error('修改密码失败:', error);
+                passwordError.textContent = '修改失败，请稍后重试';
+            } finally {
+                savePasswordBtn.textContent = '保存密码';
+                savePasswordBtn.disabled = false;
+            }
+        }
+        
+        // 退出登录
+        function logout() {
+            isLoggedIn = false;
+            authToken = null;
+            
+            // 清除本地存储
+            localStorage.removeItem('noticeAdminToken');
+            localStorage.removeItem('noticeIsLoggedIn');
+            
+            hideAdminControls();
+            adminBtn.textContent = '管理员登录';
+            showMessage('已退出登录', 'info');
+        }
+        
+        // 显示管理员控制面板
+        function showAdminControls() {
+            adminControls.classList.add('show');
+            adminBtn.textContent = '管理员已登录';
+        }
+        
+        // 隐藏管理员控制面板
+        function hideAdminControls() {
+            adminControls.classList.remove('show');
+        }
+        
+        // 显示模态框
+        function showModal(modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 隐藏模态框
+        function hideModal(modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 显示消息提示
+        function showMessage(message, type = 'info') {
+            // 如果已存在消息，先移除
+            const existingAlert = document.querySelector('.message-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alert = document.createElement('div');
+            alert.textContent = message;
+            alert.className = 'message-alert';
+            alert.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 24px;
+                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                border-radius: 5px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => alert.remove(), 300);
+            }, 3000);
+        }
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
