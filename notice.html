@@ -15,7 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -30,8 +30,32 @@
             border-bottom: 2px solid #ddd;
         }
         
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
         h1 {
             color: #2c3e50;
+            margin: 0;
+        }
+        
+        .home-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .home-btn:hover {
+            background: #2980b9;
         }
         
         .notice-container {
@@ -80,6 +104,14 @@
             background: #c0392b;
         }
         
+        button.secondary {
+            background: #95a5a6;
+        }
+        
+        button.secondary:hover {
+            background: #7f8c8d;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -102,9 +134,13 @@
             padding: 30px;
             border-radius: 10px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        
+        .modal-content.large {
+            max-width: 800px;
         }
         
         .modal h2 {
@@ -162,41 +198,6 @@
             font-size: 14px;
         }
         
-        .tab-container {
-            margin-bottom: 20px;
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            background: none;
-            color: #7f8c8d;
-        }
-        
-        .tab.active {
-            border-color: #ddd;
-            border-bottom-color: white;
-            background: white;
-            color: #2c3e50;
-            font-weight: 600;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
         .admin-controls {
             display: flex;
             gap: 10px;
@@ -211,9 +212,80 @@
             transform: translateY(0);
         }
         
-        @media (max-width: 600px) {
+        .history-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .history-section.show {
+            display: block;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-content {
+            flex: 1;
+            margin-right: 20px;
+        }
+        
+        .history-meta {
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .empty-history {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px 0;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
             body {
                 padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-left {
+                width: 100%;
+                justify-content: space-between;
             }
             
             .notice-container {
@@ -225,14 +297,30 @@
             }
             
             .admin-controls {
+                flex-wrap: wrap;
+            }
+            
+            .history-item {
                 flex-direction: column;
+            }
+            
+            .history-content {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .history-actions {
+                align-self: flex-end;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>📢 公告系统</h1>
+        <div class="header-left">
+            <h1>📢 公告系统</h1>
+            <button class="home-btn" id="homeBtn">返回首页</button>
+        </div>
         <button id="adminBtn">管理员登录</button>
     </header>
     
@@ -246,8 +334,20 @@
         <div class="admin-controls" id="adminControls">
             <button id="editNoticeBtn">编辑公告</button>
             <button id="deleteNoticeBtn" class="danger">删除公告</button>
+            <button id="showHistoryBtn">查看历史</button>
             <button id="changePasswordBtn">修改密码</button>
             <button id="logoutBtn">退出登录</button>
+        </div>
+        
+        <!-- 历史公告区域 -->
+        <div class="history-section" id="historySection">
+            <div class="history-header">
+                <h2>📜 历史公告</h2>
+                <button id="closeHistoryBtn" class="secondary">关闭历史</button>
+            </div>
+            <div class="history-list" id="historyList">
+                正在加载历史公告...
+            </div>
         </div>
     </main>
     
@@ -262,7 +362,7 @@
             </div>
             <div class="form-actions">
                 <button id="loginBtn" style="flex: 1">登录</button>
-                <button id="cancelLoginBtn" style="background: #95a5a6">取消</button>
+                <button id="cancelLoginBtn" class="secondary">取消</button>
             </div>
             <div class="char-count">
                 密码规则：6-10位，仅限数字和字母
@@ -285,7 +385,7 @@
             </div>
             <div class="form-actions">
                 <button id="publishBtn" style="flex: 1">发布公告</button>
-                <button id="cancelEditBtn" style="background: #95a5a6">取消</button>
+                <button id="cancelEditBtn" class="secondary">取消</button>
             </div>
         </div>
     </div>
@@ -310,13 +410,13 @@
             </div>
             <div class="form-actions">
                 <button id="savePasswordBtn" style="flex: 1">保存密码</button>
-                <button id="cancelPasswordBtn" style="background: #95a5a6">取消</button>
+                <button id="cancelPasswordBtn" class="secondary">取消</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 配置 - 更新为您的 Worker 地址
+        // 配置
         const API_BASE = 'https://notice-board.mgjack13.workers.dev';
         
         // 状态管理
@@ -325,9 +425,12 @@
         let currentNotice = '';
         
         // DOM 元素
+        const homeBtn = document.getElementById('homeBtn');
         const adminBtn = document.getElementById('adminBtn');
         const adminControls = document.getElementById('adminControls');
         const noticeContent = document.getElementById('noticeContent');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
         
         // 模态框
         const loginModal = document.getElementById('loginModal');
@@ -351,8 +454,10 @@
         // 控制按钮
         const editNoticeBtn = document.getElementById('editNoticeBtn');
         const deleteNoticeBtn = document.getElementById('deleteNoticeBtn');
+        const showHistoryBtn = document.getElementById('showHistoryBtn');
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
         
         // 修改密码相关
         const oldPassword = document.getElementById('oldPassword');
@@ -373,7 +478,6 @@
             const savedLoginState = localStorage.getItem('noticeIsLoggedIn');
             
             if (savedToken && savedLoginState === 'true') {
-                // 简化处理：实际应该验证token有效性
                 isLoggedIn = true;
                 authToken = savedToken;
                 showAdminControls();
@@ -383,6 +487,9 @@
         
         // 设置事件监听器
         function setupEventListeners() {
+            // 首页按钮
+            homeBtn.addEventListener('click', goToHome);
+            
             // 管理员按钮
             adminBtn.addEventListener('click', showLoginModal);
             
@@ -402,6 +509,10 @@
             // 删除公告
             deleteNoticeBtn.addEventListener('click', deleteNotice);
             
+            // 历史公告相关
+            showHistoryBtn.addEventListener('click', showHistory);
+            closeHistoryBtn.addEventListener('click', hideHistory);
+            
             // 修改密码相关
             changePasswordBtn.addEventListener('click', showChangePasswordModal);
             savePasswordBtn.addEventListener('click', changePassword);
@@ -409,6 +520,20 @@
             
             // 退出登录
             logoutBtn.addEventListener('click', logout);
+        }
+        
+        // 返回首页
+        function goToHome() {
+            // 隐藏历史公告区域
+            hideHistory();
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 刷新当前公告
+            loadNotice();
+            
+            showMessage('已返回首页', 'info');
         }
         
         // 加载公告
@@ -579,7 +704,7 @@
                 return;
             }
             
-            if (!confirm('确定要删除当前公告吗？此操作不可撤销。')) {
+            if (!confirm('确定要删除当前公告吗？此操作不可撤销，当前公告将保存到历史记录中。')) {
                 return;
             }
             
@@ -598,7 +723,7 @@
                 if (data.success) {
                     currentNotice = '';
                     loadNotice();
-                    showMessage('公告已删除', 'success');
+                    showMessage('公告已删除并保存到历史记录', 'success');
                 } else {
                     showMessage(data.error || '删除失败', 'error');
                     if (data.error === 'Unauthorized') {
@@ -607,6 +732,118 @@
                 }
             } catch (error) {
                 console.error('删除失败:', error);
+                showMessage('删除失败，请稍后重试', 'error');
+            }
+        }
+        
+        // 显示历史公告
+        async function showHistory() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            try {
+                historyList.innerHTML = '正在加载历史公告...';
+                historySection.classList.add('show');
+                
+                const response = await fetch(`${API_BASE}/api/admin/notice/history`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const history = data.history || [];
+                    
+                    if (history.length === 0) {
+                        historyList.innerHTML = '<div class="empty-history">暂无历史公告</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    history.forEach(item => {
+                        const date = new Date(item.timestamp);
+                        const formattedDate = date.toLocaleString('zh-CN');
+                        const shortContent = item.content.length > 100 
+                            ? item.content.substring(0, 100) + '...' 
+                            : item.content;
+                        
+                        html += `
+                            <div class="history-item">
+                                <div class="history-content">
+                                    <div>${shortContent.replace(/\n/g, '<br>')}</div>
+                                    <div class="history-meta">发布于：${formattedDate}</div>
+                                </div>
+                                <div class="history-actions">
+                                    <button class="danger delete-history-btn" data-id="${item.id}">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    historyList.innerHTML = html;
+                    
+                    // 为删除按钮添加事件监听器
+                    document.querySelectorAll('.delete-history-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const id = e.target.getAttribute('data-id');
+                            deleteHistoryNotice(id);
+                        });
+                    });
+                } else {
+                    historyList.innerHTML = '<div class="empty-history">加载历史公告失败</div>';
+                    if (data.error === 'Unauthorized') {
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error('加载历史公告失败:', error);
+                historyList.innerHTML = '<div class="empty-history">加载历史公告失败，请稍后重试</div>';
+            }
+            
+            // 滚动到历史区域
+            historySection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 隐藏历史公告
+        function hideHistory() {
+            historySection.classList.remove('show');
+        }
+        
+        // 删除历史公告
+        async function deleteHistoryNotice(id) {
+            if (!id || !confirm('确定要删除这条历史公告吗？此操作不可撤销。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/notice/history`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ id })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('历史公告已删除', 'success');
+                    // 重新加载历史列表
+                    showHistory();
+                } else {
+                    showMessage(data.error || '删除失败', 'error');
+                    if (data.error === 'Unauthorized') {
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error('删除历史公告失败:', error);
                 showMessage('删除失败，请稍后重试', 'error');
             }
         }
@@ -699,6 +936,7 @@
             localStorage.removeItem('noticeIsLoggedIn');
             
             hideAdminControls();
+            hideHistory();
             adminBtn.textContent = '管理员登录';
             showMessage('已退出登录', 'info');
         }
