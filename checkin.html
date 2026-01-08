@@ -1734,8 +1734,10 @@
                     
                     const cityName = this.cityCodes[msg.l] || msg.cityName || msg.l || '未知';
                     const memberId = msg.id || msg.d || '未知';
-                    const signature = msg.sig || msg.signature || '匿名';
-                    const userMessage = msg.msg || msg.message || '';
+                    
+                    // 兼容多种字段名，尝试获取署名和留言
+                    const signature = msg.sig || msg.signature || msg.n || msg.name || '匿名';
+                    const userMessage = msg.msg || msg.message || msg.content || msg.text || '';
                     
                     return `
                         <div class="message-item">
@@ -1774,7 +1776,7 @@
                 if (this.filterConditions.signature.trim()) {
                     const searchTerm = this.filterConditions.signature.toLowerCase().trim();
                     filtered = filtered.filter(msg => {
-                        const signature = (msg.sig || msg.signature || '').toLowerCase();
+                        const signature = (msg.sig || msg.signature || msg.n || msg.name || '').toLowerCase();
                         return signature.includes(searchTerm);
                     });
                 }
@@ -1852,8 +1854,15 @@
                     d: this.deviceFingerprint,
                     cityName: this.cityCodes[this.selectedCity] || '未知',
                     correct: isCorrect,
-                    sig: signature, // 署名
-                    msg: userMessage // 留言
+                    // 发送多个字段名版本确保兼容性
+                    sig: signature,       // 主要字段名
+                    signature: signature, // 备用字段名1
+                    n: signature,         // 备用字段名2 (name)
+                    name: signature,      // 备用字段名3
+                    msg: userMessage,     // 主要字段名
+                    message: userMessage, // 备用字段名1
+                    content: userMessage, // 备用字段名2
+                    text: userMessage     // 备用字段名3
                 };
                 
                 this.showLoading('正在发送报平安信息...', '发送中');
@@ -1957,7 +1966,13 @@
                     cityName: ['台北市', '新北市', '桃园市', '新竹市'][Math.floor(Math.random() * 4)],
                     correct: true,
                     sig: signatures[Math.floor(Math.random() * signatures.length)],
-                    msg: messages[Math.floor(Math.random() * messages.length)]
+                    signature: signatures[Math.floor(Math.random() * signatures.length)],
+                    n: signatures[Math.floor(Math.random() * signatures.length)],
+                    name: signatures[Math.floor(Math.random() * signatures.length)],
+                    msg: messages[Math.floor(Math.random() * messages.length)],
+                    message: messages[Math.floor(Math.random() * messages.length)],
+                    content: messages[Math.floor(Math.random() * messages.length)],
+                    text: messages[Math.floor(Math.random() * messages.length)]
                 };
                 
                 this.showLoading('正在发送测试数据...', '测试中');
