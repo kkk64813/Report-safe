@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一键报警系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: #ff5252;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .alarm-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px 0;
+        }
+        
+        .alarm-button {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff5252, #ff1744);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 20px 0;
+            box-shadow: 0 0 40px rgba(255, 82, 82, 0.6);
+            transition: all 0.3s ease;
+            border: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .alarm-button:hover, .alarm-button:active {
+            transform: scale(1.05);
+            box-shadow: 0 0 60px rgba(255, 82, 82, 0.8);
+        }
+        
+        .alarm-button:active {
+            transform: scale(0.98);
+        }
+        
+        .alarm-button.pressed {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 40px rgba(255, 82, 82, 0.6); }
+            50% { box-shadow: 0 0 80px rgba(255, 82, 82, 0.9); }
+            100% { box-shadow: 0 0 40px rgba(255, 82, 82, 0.6); }
+        }
+        
+        .alarm-button i {
+            font-size: 5rem;
+            margin-bottom: 15px;
+        }
+        
+        .alarm-button-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        
+        .warning-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #ffcc80;
+            font-size: 1.1rem;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+        
+        .info-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #bbdefb;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #e3f2fd;
+        }
+        
+        .info-value {
+            font-family: 'Courier New', monospace;
+            color: #c5e1a5;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .home-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .history-btn {
+            background: linear-gradient(to right, #2196f3, #0d47a1);
+            color: white;
+        }
+        
+        .history-btn:hover {
+            background: linear-gradient(to right, #0d8bf2, #0b3d8a);
+            transform: translateY(-2px);
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #a5d6a7;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            display: block;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ffab91;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            display: block;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .alarm-button {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .alarm-button i {
+                font-size: 4rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .alarm-button {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .alarm-button i {
+                font-size: 3.5rem;
+            }
+            
+            .alarm-button-text {
+                font-size: 1.5rem;
+            }
+            
+            .info-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-shield-alt"></i> 一键报警系统</h1>
+        <p class="subtitle">紧急情况下，请按下报警按钮。系统将立即记录您的报警信息并通知所有安装此应用的设备。</p>
+    </header>
+    
+    <div class="container">
+        <div class="alarm-section">
+            <button class="alarm-button" id="alarmBtn">
+                <i class="fas fa-bell"></i>
+                <span class="alarm-button-text">一键报警</span>
+            </button>
+            
+            <p class="warning-text">
+                <i class="fas fa-exclamation-triangle"></i> 警告：此按钮仅在紧急情况下使用。误报可能导致不必要的恐慌和资源浪费。
+            </p>
+        </div>
+        
+        <div class="info-section">
+            <h2 class="info-title"><i class="fas fa-info-circle"></i> 报警信息</h2>
+            <div class="info-item">
+                <span class="info-label">您的IP地址：</span>
+                <span class="info-value" id="ipAddress">获取中...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">最近报警时间：</span>
+                <span class="info-value" id="lastAlarmTime">暂无报警记录</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">报警状态：</span>
+                <span class="info-value" id="alarmStatus">待命</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">设备连接：</span>
+                <span class="info-value" id="connectionStatus">正常</span>
+            </div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="buttons">
+            <button class="btn home-btn" id="homeBtn">
+                <i class="fas fa-home"></i> 返回首页
+            </button>
+            <button class="btn history-btn" id="historyBtn">
+                <i class="fas fa-history"></i> 报警记录
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 安全报警系统 | 紧急联系电话: 110 | 设计用于: https://kkk64813.github.io/Report-safe/</p>
+        <p>Worker连接: https://alarm.mgjack13.workers.dev/ | KV: ALARM</p>
+    </footer>
+
+    <script>
+        // 获取页面元素
+        const alarmBtn = document.getElementById('alarmBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const historyBtn = document.getElementById('historyBtn');
+        const ipAddressElement = document.getElementById('ipAddress');
+        const lastAlarmTimeElement = document.getElementById('lastAlarmTime');
+        const alarmStatusElement = document.getElementById('alarmStatus');
+        const connectionStatusElement = document.getElementById('connectionStatus');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        // Worker URL
+        const WORKER_URL = 'https://alarm.mgjack13.workers.dev/';
+        
+        // 获取用户IP地址
+        async function getUserIP() {
+            try {
+                // 通过Worker获取IP地址
+                const response = await fetch(`${WORKER_URL}?action=getip`);
+                const data = await response.json();
+                
+                if (data.ip) {
+                    ipAddressElement.textContent = data.ip;
+                    return data.ip;
+                } else {
+                    ipAddressElement.textContent = '未知';
+                    return 'unknown';
+                }
+            } catch (error) {
+                console.error('获取IP地址失败:', error);
+                ipAddressElement.textContent = '获取失败';
+                return 'error';
+            }
+        }
+        
+        // 发送报警请求
+        async function sendAlarm() {
+            try {
+                // 显示报警状态
+                alarmStatusElement.textContent = '报警发送中...';
+                alarmStatusElement.style.color = '#ffcc80';
+                
+                // 获取当前时间
+                const now = new Date();
+                const alarmTime = now.toLocaleString('zh-CN');
+                
+                // 获取用户IP
+                const userIP = await getUserIP();
+                
+                // 准备报警数据
+                const alarmData = {
+                    action: 'alarm',
+                    ip: userIP,
+                    time: alarmTime,
+                    timestamp: now.getTime()
+                };
+                
+                // 发送报警到Worker
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(alarmData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 报警成功
+                    showStatus('报警已发送！所有设备将收到通知。', 'success');
+                    lastAlarmTimeElement.textContent = alarmTime;
+                    alarmStatusElement.textContent = '已报警';
+                    alarmStatusElement.style.color = '#ff5252';
+                    
+                    // 记录到本地存储
+                    const alarmHistory = JSON.parse(localStorage.getItem('alarmHistory') || '[]');
+                    alarmHistory.unshift({
+                        time: alarmTime,
+                        ip: userIP,
+                        timestamp: now.getTime()
+                    });
+                    
+                    // 只保留最近的10条记录
+                    if (alarmHistory.length > 10) {
+                        alarmHistory.pop();
+                    }
+                    
+                    localStorage.setItem('alarmHistory', JSON.stringify(alarmHistory));
+                    
+                    // 按钮动画效果
+                    alarmBtn.classList.add('pressed');
+                    setTimeout(() => {
+                        alarmBtn.classList.remove('pressed');
+                    }, 3000);
+                } else {
+                    throw new Error(result.message || '报警失败');
+                }
+            } catch (error) {
+                console.error('报警发送失败:', error);
+                showStatus(`报警发送失败: ${error.message}`, 'error');
+                alarmStatusElement.textContent = '发送失败';
+                alarmStatusElement.style.color = '#ff5252';
+            }
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message';
+            
+            if (type === 'success') {
+                statusMessage.classList.add('status-success');
+            } else if (type === 'error') {
+                statusMessage.classList.add('status-error');
+            }
+            
+            // 5秒后隐藏消息
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 检查Worker连接状态
+        async function checkWorkerConnection() {
+            try {
+                const response = await fetch(WORKER_URL);
+                connectionStatusElement.textContent = '正常';
+                connectionStatusElement.style.color = '#c5e1a5';
+                return true;
+            } catch (error) {
+                console.error('Worker连接失败:', error);
+                connectionStatusElement.textContent = '断开';
+                connectionStatusElement.style.color = '#ff5252';
+                return false;
+            }
+        }
+        
+        // 加载最近的报警记录
+        function loadLastAlarm() {
+            const alarmHistory = JSON.parse(localStorage.getItem('alarmHistory') || '[]');
+            if (alarmHistory.length > 0) {
+                const lastAlarm = alarmHistory[0];
+                lastAlarmTimeElement.textContent = lastAlarm.time;
+            }
+        }
+        
+        // 事件监听器
+        alarmBtn.addEventListener('click', sendAlarm);
+        
+        homeBtn.addEventListener('click', () => {
+            // 在WebView中返回首页
+            if (window.android && window.android.goToHome) {
+                window.android.goToHome();
+            } else {
+                // 如果在浏览器中，则直接跳转
+                window.location.href = 'index.html';
+            }
+        });
+        
+        historyBtn.addEventListener('click', () => {
+            // 显示报警历史
+            const alarmHistory = JSON.parse(localStorage.getItem('alarmHistory') || '[]');
+            if (alarmHistory.length === 0) {
+                showStatus('暂无报警记录', 'error');
+                return;
+            }
+            
+            let historyText = '最近的报警记录:\n\n';
+            alarmHistory.forEach((record, index) => {
+                historyText += `${index + 1}. 时间: ${record.time}, IP: ${record.ip}\n`;
+            });
+            
+            alert(historyText);
+        });
+        
+        // 模拟振动功能（在支持振动的设备上）
+        function vibrateDevice() {
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+        
+        // 初始化页面
+        async function initPage() {
+            // 获取IP地址
+            await getUserIP();
+            
+            // 检查Worker连接
+            await checkWorkerConnection();
+            
+            // 加载最近的报警记录
+            loadLastAlarm();
+            
+            // 测试振动
+            vibrateDevice();
+            
+            // 模拟报警通知（每30秒检查一次新报警）
+            setInterval(async () => {
+                try {
+                    const response = await fetch(`${WORKER_URL}?action=check`);
+                    const data = await response.json();
+                    
+                    if (data.hasNewAlarm) {
+                        showStatus('接收到新报警！请立即查看。', 'error');
+                        vibrateDevice();
+                        
+                        // 长时间振动提醒
+                        if (navigator.vibrate) {
+                            navigator.vibrate([500, 200, 500, 200, 500]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('检查报警失败:', error);
+                }
+            }, 30000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+        
+        // 添加一个全局函数供WebView调用（如果需要）
+        window.receiveAlarmNotification = function(alarmData) {
+            showStatus(`新报警: ${alarmData.time} (IP: ${alarmData.ip})`, 'error');
+            
+            // 触发振动
+            if (navigator.vibrate) {
+                navigator.vibrate([1000, 500, 1000]);
+            }
+        };
+    </script>
+</body>
+</html>
