@@ -132,6 +132,10 @@
             background: linear-gradient(135deg, #00b359, #33cc7a);
         }
         
+        .card-5 .card-icon {
+            background: linear-gradient(135deg, #9c27b0, #ba68c8);
+        }
+        
         .card-title {
             font-size: 1.5rem;
             margin-bottom: 15px;
@@ -177,6 +181,10 @@
         
         .card-4 .card-btn {
             background-color: #00b359;
+        }
+        
+        .card-5 .card-btn {
+            background-color: #9c27b0;
         }
         
         .card-btn:hover {
@@ -326,6 +334,16 @@
                 <p class="card-desc">查看所有家庭成员的最新安全状态、位置信息和最近活动时间。</p>
                 <a href="status.html" class="card-btn">查看状态</a>
             </div>
+            
+            <!-- 新增的第五个功能卡片 -->
+            <div class="function-card card-5">
+                <div class="card-icon">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <h3 class="card-title">两岸网络延迟监测工具</h3>
+                <p class="card-desc">实时监测中国大陆与台湾地区的网络连接状态，检测网络延迟与连通性，确保通讯畅通。</p>
+                <a href="https://kkk64813.github.io/crisis-monitoring/" target="_blank" class="card-btn">进入监测工具</a>
+            </div>
         </main>
         
         <footer>
@@ -371,11 +389,16 @@
                     this.style.transform = '';
                 }, 200);
                 
+                // 如果是两岸网络延迟监测工具，直接跳转，不需要演示提示
+                if (this.getAttribute('href') === 'https://kkk64813.github.io/crisis-monitoring/') {
+                    return; // 直接跳转，不阻止
+                }
+                
                 // 在实际应用中，这里会进行页面跳转
                 // 由于是示例，我们只是演示效果
                 console.log(`即将跳转到: ${this.getAttribute('href')}`);
                 
-                // 如果是演示环境，阻止默认跳转
+                // 如果是演示环境，阻止默认跳转（除了两岸网络延迟监测工具）
                 if(window.location.href.includes('file://') || window.location.href.includes('localhost')) {
                     e.preventDefault();
                     alert(`演示模式：即将跳转到 ${this.getAttribute('href')}\n在实际系统中，这会导航到相应页面。`);
