@@ -498,7 +498,7 @@
     
     <div class="container">
         <div class="alarm-section">
-            <button class="alarm-button" id="alarmBtn">
+            <button class="alarm-button" id="alarmBtn" onclick="triggerAlarm()">
                 <i class="fas fa-bell"></i>
                 <span class="alarm-button-text">一键报警</span>
             </button>
@@ -529,6 +529,10 @@
             <div class="info-item">
                 <span class="info-label">轮询状态：</span>
                 <span class="info-value" id="pollingStatus">未启动</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">APP模式：</span>
+                <span class="info-value" id="appMode">检测中...</span>
             </div>
         </div>
         
@@ -583,6 +587,7 @@
         const deviceIdElement = document.getElementById('deviceId');
         const connectionStatusElement = document.getElementById('connectionStatus');
         const pollingStatusElement = document.getElementById('pollingStatus');
+        const appModeElement = document.getElementById('appMode');
         const alarmsListElement = document.getElementById('alarmsList');
         const alarmsCountElement = document.getElementById('alarmsCount');
         const statusMessage = document.getElementById('statusMessage');
@@ -598,6 +603,7 @@
         let pollingInterval = null;
         let lastPollTime = 0;
         let knownAlarmIds = new Set(); // 用于跟踪已知道的报警ID
+        let isInApp = false; // 标记是否在APP中运行
         
         // 初始化设备ID
         function initDeviceId() {
@@ -607,6 +613,38 @@
             }
             deviceIdElement.textContent = deviceId.substring(0, 20) + '...';
             deviceIdElement.title = deviceId;
+        }
+        
+        // 检测是否在APP中运行
+        function detectAppEnvironment() {
+            // 检查是否存在Android接口
+            if (typeof Android !== 'undefined' && Android !== null) {
+                isInApp = true;
+                appModeElement.textContent = 'APP模式 (已连接Android接口)';
+                appModeElement.style.color = '#4caf50';
+                return true;
+            }
+            
+            // 检查是否存在自定义的app接口（某些WebView可能使用不同的名称）
+            if (window.app && typeof window.app.sendAlarm === 'function') {
+                isInApp = true;
+                appModeElement.textContent = 'APP模式 (已连接自定义接口)';
+                appModeElement.style.color = '#4caf50';
+                return true;
+            }
+            
+            // 检查是否存在通过addJavascriptInterface注入的接口
+            if (window.android && typeof window.android.sendAlarm === 'function') {
+                isInApp = true;
+                appModeElement.textContent = 'APP模式 (已连接Android接口)';
+                appModeElement.style.color = '#4caf50';
+                return true;
+            }
+            
+            isInApp = false;
+            appModeElement.textContent = 'Web浏览器模式';
+            appModeElement.style.color = '#ff9800';
+            return false;
         }
         
         // 获取用户IP地址
@@ -670,11 +708,95 @@
             }
         }
         
-        // 发送报警请求
-        async function sendAlarm() {
+        // 主报警触发函数
+        async function triggerAlarm() {
+            // 按钮动画效果
+            alarmBtn.classList.add('pressed');
+            setTimeout(() => {
+                alarmBtn.classList.remove('pressed');
+            }, 3000);
+            
+            // 根据环境选择报警方式
+            if (isInApp) {
+                // 在APP中，调用Android原生方法
+                sendAlarmViaAndroid();
+            } else {
+                // 在浏览器中，使用HTTP请求
+                await sendAlarmViaHTTP();
+            }
+        }
+        
+        // 通过Android原生接口发送报警
+        function sendAlarmViaAndroid() {
+            showStatus('正在通过APP发送报警...', 'warning');
+            
             try {
-                // 显示报警状态
-                showStatus('正在发送报警...', 'warning');
+                // 获取当前时间
+                const now = new Date();
+                const alarmTime = now.toLocaleString('zh-CN');
+                
+                // 准备报警数据
+                const alarmData = {
+                    ip: ipAddressElement.textContent,
+                    time: alarmTime,
+                    timestamp: now.getTime(),
+                    deviceId: deviceId
+                };
+                
+                // 尝试不同的Android接口名称
+                let result = null;
+                
+                if (typeof Android !== 'undefined' && Android !== null && typeof Android.sendAlarm === 'function') {
+                    // 标准Android接口
+                    result = Android.sendAlarm(JSON.stringify(alarmData));
+                } else if (window.android && typeof window.android.sendAlarm === 'function') {
+                    // 备用Android接口名称
+                    result = window.android.sendAlarm(JSON.stringify(alarmData));
+                } else if (window.app && typeof window.app.sendAlarm === 'function') {
+                    // 自定义接口名称
+                    result = window.app.sendAlarm(JSON.stringify(alarmData));
+                }
+                
+                if (result) {
+                    try {
+                        const parsedResult = JSON.parse(result);
+                        if (parsedResult.success) {
+                            showStatus('报警已通过APP发送！所有设备将收到通知。', 'success');
+                            vibrateAlarm();
+                        } else {
+                            showStatus(`APP报警失败: ${parsedResult.message || '未知错误'}`, 'error');
+                        }
+                    } catch (e) {
+                        // 如果结果不是JSON，直接显示
+                        showStatus(`APP报警结果: ${result}`, result.toLowerCase().includes('成功') ? 'success' : 'error');
+                    }
+                } else {
+                    // 如果没有返回值，假设成功
+                    showStatus('报警已通过APP发送！所有设备将收到通知。', 'success');
+                    vibrateAlarm();
+                }
+                
+                // 立即获取最新报警记录
+                setTimeout(() => {
+                    fetchAlarms();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Android接口调用失败:', error);
+                showStatus(`APP报警失败: ${error.message}`, 'error');
+                
+                // 如果Android接口失败，尝试使用HTTP作为后备
+                setTimeout(() => {
+                    showStatus('正在尝试HTTP后备方案...', 'warning');
+                    sendAlarmViaHTTP();
+                }, 2000);
+            }
+        }
+        
+        // 通过HTTP发送报警
+        async function sendAlarmViaHTTP() {
+            try {
+                showStatus('正在通过HTTP发送报警...', 'warning');
                 
                 // 获取当前时间
                 const now = new Date();
@@ -715,12 +837,6 @@
                     // 立即获取最新报警记录
                     await fetchAlarms();
                     
-                    // 按钮动画效果
-                    alarmBtn.classList.add('pressed');
-                    setTimeout(() => {
-                        alarmBtn.classList.remove('pressed');
-                    }, 3000);
-                    
                     // 触发本地振动
                     vibrateAlarm();
                     
@@ -729,7 +845,7 @@
                     throw new Error(result.message || `报警失败: ${response.status}`);
                 }
             } catch (error) {
-                console.error('报警发送失败:', error);
+                console.error('HTTP报警发送失败:', error);
                 showStatus(`报警发送失败: ${error.message}`, 'error');
                 return false;
             }
@@ -1063,7 +1179,7 @@
         }
         
         // 事件监听器
-        alarmBtn.addEventListener('click', sendAlarm);
+        // 注意：我们已经将报警按钮的点击事件改为直接调用 triggerAlarm()，所以这里不需要再添加监听器
         
         homeBtn.addEventListener('click', () => {
             // 在WebView中返回首页
@@ -1104,6 +1220,9 @@
             // 初始化设备ID
             initDeviceId();
             
+            // 检测是否在APP中
+            detectAppEnvironment();
+            
             // 获取IP地址
             await getUserIP();
             
@@ -1129,6 +1248,13 @@
             setTimeout(() => {
                 showStatus('提示：按空格键可暂停/继续轮询，按Ctrl+R手动刷新', 'warning');
             }, 3000);
+            
+            // 如果在APP中，显示特殊提示
+            if (isInApp) {
+                setTimeout(() => {
+                    showStatus('APP模式已启用：按下报警按钮将调用Android原生接口', 'success');
+                }, 4000);
+            }
         }
         
         // 页面加载完成后初始化
@@ -1144,6 +1270,12 @@
                 startPolling();
             }
         });
+        
+        // 提供一个全局函数，供Android调用测试
+        window.testAndroidConnection = function() {
+            showStatus('Android接口测试成功！', 'success');
+            return JSON.stringify({ success: true, message: 'JavaScript接口正常' });
+        };
     </script>
 </body>
 </html>
