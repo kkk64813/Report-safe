@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -629,43 +629,42 @@
                 <span class="info-value" id="pollingStatus">未启动</span>
             </div>
         </div>
-		
-		<!-- 添加除錯區域 -->
-		<div class="debug-section" style="background: rgba(0,0,0,0.3); padding: 15px; margin-top: 20px; border-radius: 10px;" id="debugSection">
-    <h2 class="info-title" style="color: #ff9800;">
-        <i class="fas fa-bug"></i> 除錯資訊
-    </h2>
-    
-    <div class="info-item">
-        <span class="info-label">FCM Token：</span>
-        <span class="info-value" id="fcmTokenDisplay">未獲取</span>
-    </div>
-    
-    <div class="info-item">
-        <span class="info-label">設備型號：</span>
-        <span class="info-value" id="deviceModel">未知</span>
-    </div>
-    
-    <div class="info-item">
-        <span class="info-label">Token狀態：</span>
-        <span class="info-value" id="tokenStatus">未註冊</span>
-    </div>
-    
-    <div style="margin-top: 15px; display: flex; gap: 10px;">
-        <button class="btn" onclick="copyFCMToken()" style="background: #2196f3; color: white; flex: 1;">
-            <i class="fas fa-copy"></i> 複製Token
-        </button>
         
-        <button class="btn" onclick="testWithMyToken()" style="background: #4caf50; color: white; flex: 1;">
-            <i class="fas fa-bell"></i> 測試我的Token
-        </button>
-        
-        <button class="btn" onclick="clearTokenData()" style="background: #f44336; color: white; flex: 1;">
-            <i class="fas fa-trash"></i> 清理Token
-        </button>
-    </div>
-</div>
-
+        <!-- 调试区域 -->
+        <div class="debug-section" style="background: rgba(0,0,0,0.3); padding: 15px; margin-top: 20px; border-radius: 10px; display: none;" id="debugSection">
+            <h2 class="info-title" style="color: #ff9800;">
+                <i class="fas fa-bug"></i> 调试信息
+            </h2>
+            
+            <div class="info-item">
+                <span class="info-label">FCM Token：</span>
+                <span class="info-value" id="fcmTokenDisplay">未获取</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">设备型号：</span>
+                <span class="info-value" id="deviceModel">未知</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Token状态：</span>
+                <span class="info-value" id="tokenStatus">未注册</span>
+            </div>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn" id="copyTokenBtn" style="background: #2196f3; color: white; flex: 1;">
+                    <i class="fas fa-copy"></i> 复制Token
+                </button>
+                
+                <button class="btn" id="testMyTokenBtn" style="background: #4caf50; color: white; flex: 1;">
+                    <i class="fas fa-bell"></i> 测试我的Token
+                </button>
+                
+                <button class="btn" id="clearTokenBtn" style="background: #f44336; color: white; flex: 1;">
+                    <i class="fas fa-trash"></i> 清理Token
+                </button>
+            </div>
+        </div>
         
         <div class="alarms-list-section">
             <div class="alarms-list-title">
@@ -752,6 +751,9 @@
         const ringingDetails = document.getElementById('ringingDetails');
         const silenceBtn = document.getElementById('silenceBtn');
         const viewAlarmBtn = document.getElementById('viewAlarmBtn');
+        const copyTokenBtn = document.getElementById('copyTokenBtn');
+        const testMyTokenBtn = document.getElementById('testMyTokenBtn');
+        const clearTokenBtn = document.getElementById('clearTokenBtn');
         
         // Worker URL
         const WORKER_URL = 'https://alarm.mgjack13.workers.dev/';
@@ -764,6 +766,149 @@
         let isRinging = false;
         let ringInterval = null;
         let currentRingingAlarm = null;
+        
+        // ==================== 调试函数 ====================
+        
+        // 复制FCM Token到剪贴板
+        function copyFCMToken() {
+            const tokenElement = document.getElementById('fcmTokenDisplay');
+            const token = tokenElement.textContent;
+            
+            if (token === '未获取' || token === '获取中...') {
+                alert('还没有获取到FCM Token');
+                return;
+            }
+            
+            // 获取完整token（存储在title属性中）
+            const fullToken = tokenElement.title || token;
+            
+            navigator.clipboard.writeText(fullToken).then(() => {
+                showStatus('FCM Token已复制到剪贴板', 'success');
+            }).catch(err => {
+                showStatus('复制失败: ' + err.message, 'error');
+            });
+        }
+        
+        // 使用自己的Token测试推送
+        async function testWithMyToken() {
+            const tokenElement = document.getElementById('fcmTokenDisplay');
+            const token = tokenElement.textContent;
+            
+            if (token === '未获取' || token === '获取中...') {
+                showStatus('请先获取FCM Token', 'error');
+                return;
+            }
+            
+            showStatus('正在测试您的Token...', 'warning');
+            
+            // 获取完整token（存储在title属性中）
+            const fullToken = tokenElement.title || token;
+            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(fullToken)}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('✅ 测试推送已发送到您的设备', 'success');
+                    document.getElementById('tokenStatus').textContent = '测试推送成功';
+                    document.getElementById('tokenStatus').style.color = '#4caf50';
+                } else {
+                    showStatus('❌ 测试推送失败', 'error');
+                    document.getElementById('tokenStatus').textContent = '测试推送失败';
+                    document.getElementById('tokenStatus').style.color = '#f44336';
+                }
+            } catch (error) {
+                showStatus('测试失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 清理Token数据
+        async function clearTokenData() {
+            if (!confirm('确定要清理Token数据吗？这会让设备重新注册Token。')) {
+                return;
+            }
+            
+            showStatus('正在清理Token数据...', 'warning');
+            
+            try {
+                // 清理本地存储
+                localStorage.removeItem('deviceId');
+                
+                // 重新生成设备ID
+                deviceId = null;
+                initDeviceId();
+                
+                // 隐藏调试区域
+                document.getElementById('debugSection').style.display = 'none';
+                
+                // 重置显示
+                document.getElementById('fcmTokenDisplay').textContent = '未获取';
+                document.getElementById('tokenStatus').textContent = '未注册';
+                
+                showStatus('Token数据已清理，请重新加载页面获取新Token', 'success');
+            } catch (error) {
+                showStatus('清理失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 从Android App获取Token并显示
+        function receiveFCMTokenFromApp(token) {
+            if (!token) return;
+            
+            // 显示调试区域
+            document.getElementById('debugSection').style.display = 'block';
+            
+            // 显示Token（只显示前后部分）
+            const displayToken = token.length > 30 
+                ? token.substring(0, 15) + '...' + token.substring(token.length - 15)
+                : token;
+            
+            document.getElementById('fcmTokenDisplay').textContent = displayToken;
+            document.getElementById('fcmTokenDisplay').title = token; // 完整Token在title中
+            
+            // 注册Token到Worker
+            registerTokenToWorker(token);
+        }
+        
+        // 注册Token到Worker
+        async function registerTokenToWorker(token) {
+            try {
+                document.getElementById('tokenStatus').textContent = '注册中...';
+                document.getElementById('tokenStatus').style.color = '#ff9800';
+                
+                const response = await fetch(`${WORKER_URL}?action=register_fcm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        deviceId: deviceId,
+                        platform: 'android',
+                        appPackage: 'com.mgjack.emergencymanagement'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('tokenStatus').textContent = '已注册';
+                    document.getElementById('tokenStatus').style.color = '#4caf50';
+                    showStatus('FCM Token注册成功', 'success');
+                } else {
+                    document.getElementById('tokenStatus').textContent = '注册失败';
+                    document.getElementById('tokenStatus').style.color = '#f44336';
+                    showStatus('FCM Token注册失败', 'error');
+                }
+            } catch (error) {
+                document.getElementById('tokenStatus').textContent = '注册异常';
+                document.getElementById('tokenStatus').style.color = '#f44336';
+                console.error('Token注册失败:', error);
+            }
+        }
+        
+        // ==================== 主要功能函数 ====================
         
         // 初始化设备ID
         function initDeviceId() {
@@ -808,66 +953,56 @@
         }
         
         // 测试Worker连接
-async function testWorkerConnection() {
-    try {
-        const response = await fetch(`${WORKER_URL}?action=test`);
-        if (response.ok) {
-            const data = await response.json();
-            
-            // 新版判断逻辑：检查HTTP v1 API所需的核心配置
-            if (data.success && data.firebaseAuthTest && data.firebaseConfig.hasPrivateKey) {
-                connectionStatusElement.textContent = '已连接 (HTTP v1 API 正常)';
-                connectionStatusElement.style.color = '#4caf50';
-                
-                // 更新推送状态显示
-                pushStatusElement.textContent = '已配置 (HTTP v1 API 可用)';
-                pushStatusElement.style.color = '#4caf50';
-                
-                return true;
-            } else {
-                // 如果新版API检测失败，再按旧逻辑显示
-                connectionStatusElement.textContent = '已连接 (HTTP v1 API 配置异常)';
-                connectionStatusElement.style.color = '#ff9800';
-                
-                if (data.firebaseConfig && data.firebaseConfig.fcmServerKey) {
-                    pushStatusElement.textContent = '旧版密钥仍存在，请升级';
-                    pushStatusElement.style.color = '#ff9800';
+        async function testWorkerConnection() {
+            try {
+                const response = await fetch(`${WORKER_URL}?action=test`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success && data.firebaseAuthTest && data.firebaseConfig.hasPrivateKey) {
+                        connectionStatusElement.textContent = '已连接 (HTTP v1 API 正常)';
+                        connectionStatusElement.style.color = '#4caf50';
+                        
+                        pushStatusElement.textContent = '已配置 (HTTP v1 API 可用)';
+                        pushStatusElement.style.color = '#4caf50';
+                        
+                        return true;
+                    } else {
+                        connectionStatusElement.textContent = '已连接 (HTTP v1 API 配置异常)';
+                        connectionStatusElement.style.color = '#ff9800';
+                        
+                        if (data.firebaseConfig && data.firebaseConfig.fcmServerKey) {
+                            pushStatusElement.textContent = '旧版密钥仍存在，请升级';
+                            pushStatusElement.style.color = '#ff9800';
+                        } else {
+                            pushStatusElement.textContent = '未配置 (FCM不可用)';
+                            pushStatusElement.style.color = '#ff5252';
+                        }
+                        return false;
+                    }
                 } else {
-                    pushStatusElement.textContent = '未配置 (FCM不可用)';
-                    pushStatusElement.style.color = '#ff5252';
+                    throw new Error(`HTTP错误: ${response.status}`);
                 }
+            } catch (error) {
+                console.error('Worker连接测试失败:', error);
+                connectionStatusElement.textContent = '连接失败';
+                connectionStatusElement.style.color = '#ff5252';
+                pushStatusElement.textContent = '检测失败';
+                pushStatusElement.style.color = '#ff5252';
                 return false;
             }
-        } else {
-            throw new Error(`HTTP错误: ${response.status}`);
         }
-    } catch (error) {
-        console.error('Worker连接测试失败:', error);
-        connectionStatusElement.textContent = '连接失败';
-        connectionStatusElement.style.color = '#ff5252';
-        pushStatusElement.textContent = '检测失败';
-        pushStatusElement.style.color = '#ff5252';
-        return false;
-    }
-}
         
         // 发送报警请求
         async function sendAlarm() {
             try {
-                // 显示报警状态
                 showStatus('正在发送报警...', 'warning');
                 
-                // 获取当前时间
                 const now = new Date();
                 const alarmTime = now.toLocaleString('zh-CN');
-                
-                // 获取用户IP
                 const userIP = await getUserIP();
-                
-                // 生成报警ID
                 const alarmId = 'alarm-' + now.getTime() + '-' + Math.random().toString(36).substr(2, 9);
                 
-                // 准备报警数据
                 const alarmData = {
                     action: 'alarm',
                     ip: userIP,
@@ -879,7 +1014,6 @@ async function testWorkerConnection() {
                     notification_body: `报警时间: ${alarmTime}\nIP地址: ${userIP}\n请立即查看！`
                 };
                 
-                // 发送报警到Worker
                 const response = await fetch(WORKER_URL, {
                     method: 'POST',
                     headers: {
@@ -896,24 +1030,19 @@ async function testWorkerConnection() {
                 }
                 
                 if (response.ok && result.success) {
-                    // 报警成功
                     let message = '报警已发送！';
                     if (result.pushSent && result.firebase_result) {
                         message += ` 已推送 ${result.firebase_result.sent_count || 0} 台设备`;
                     }
                     
                     showStatus(message, 'success');
-                    
-                    // 立即获取最新报警记录
                     await fetchAlarms();
                     
-                    // 按钮动画效果
                     alarmBtn.classList.add('pressed');
                     setTimeout(() => {
                         alarmBtn.classList.remove('pressed');
                     }, 3000);
                     
-                    // 触发本地振动
                     vibrateAlarm();
                     
                     return true;
@@ -955,26 +1084,20 @@ async function testWorkerConnection() {
             try {
                 pollingDot.classList.add('active');
                 
-                // 获取报警历史
                 const response = await fetch(`${WORKER_URL}?action=history&limit=20`);
                 
                 if (response.ok) {
                     const data = await response.json();
                     
                     if (data.success && data.alarms) {
-                        // 更新轮询状态
                         lastPollTime = Date.now();
                         lastPollTimeElement.textContent = '刚刚';
                         pollingStatusElement.textContent = '正常';
                         pollingStatusElement.style.color = '#4caf50';
                         
-                        // 更新报警列表
                         updateAlarmsList(data.alarms);
-                        
-                        // 检查是否有新报警
                         checkForNewAlarms(data.alarms);
                         
-                        // 更新轮询指示器
                         setTimeout(() => {
                             pollingDot.classList.remove('active');
                         }, 500);
@@ -1001,10 +1124,8 @@ async function testWorkerConnection() {
         
         // 更新报警列表显示
         function updateAlarmsList(alarms) {
-            // 更新计数
             alarmsCountElement.textContent = `${alarms.length} 条记录`;
             
-            // 如果没有报警记录
             if (alarms.length === 0) {
                 alarmsListElement.innerHTML = `
                     <div class="no-alarms">
@@ -1016,22 +1137,17 @@ async function testWorkerConnection() {
                 return;
             }
             
-            // 清空列表
             alarmsListElement.innerHTML = '';
             
-            // 添加报警项
             alarms.forEach((alarm, index) => {
-                // 记录报警ID
                 knownAlarmIds.add(alarm.id);
                 
                 const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
                 const timeAgo = getTimeAgo(alarm.timestamp);
+                const isMyAlarm = alarm.deviceId === deviceId;
                 
                 const alarmItem = document.createElement('div');
                 alarmItem.className = 'alarm-item';
-                
-                // 如果是当前设备的报警，添加特殊标记
-                const isMyAlarm = alarm.deviceId === deviceId;
                 
                 alarmItem.innerHTML = `
                     <div class="alarm-item-header">
@@ -1050,19 +1166,15 @@ async function testWorkerConnection() {
         
         // 检查是否有新报警
         function checkForNewAlarms(alarms) {
-            // 找出新的报警（不在已知ID集合中的）
             const newAlarms = alarms.filter(alarm => !knownAlarmIds.has(alarm.id));
             
             if (newAlarms.length > 0) {
-                // 显示通知
                 showAlarmNotification(newAlarms);
                 
-                // 更新已知ID集合
                 newAlarms.forEach(alarm => {
                     knownAlarmIds.add(alarm.id);
                 });
                 
-                // 如果是新报警且不是当前设备触发的，触发响铃
                 const newExternalAlarms = newAlarms.filter(alarm => alarm.deviceId !== deviceId);
                 if (newExternalAlarms.length > 0 && !isRinging) {
                     triggerRinging(newExternalAlarms[0]);
@@ -1072,13 +1184,11 @@ async function testWorkerConnection() {
         
         // 显示报警通知
         function showAlarmNotification(alarms) {
-            // 移除现有的通知
             const existingNotifications = document.querySelectorAll('.notification:not(.ringing-notification)');
             existingNotifications.forEach(notification => {
                 notification.remove();
             });
             
-            // 创建新通知
             const notification = document.createElement('div');
             notification.className = 'notification';
             
@@ -1102,15 +1212,12 @@ async function testWorkerConnection() {
                 </div>
             `;
             
-            // 添加到页面
             document.body.appendChild(notification);
             
-            // 添加关闭事件
             notification.querySelector('.close-notification').addEventListener('click', () => {
                 notification.remove();
             });
             
-            // 10秒后自动关闭
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.remove();
@@ -1120,12 +1227,11 @@ async function testWorkerConnection() {
         
         // 触发响铃
         function triggerRinging(alarm) {
-            if (isRinging) return; // 已经在响铃中
+            if (isRinging) return;
             
             isRinging = true;
             currentRingingAlarm = alarm;
             
-            // 更新响铃通知内容
             const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
             ringingDetails.innerHTML = `
                 <p>时间: ${alarmTime}</p>
@@ -1133,13 +1239,9 @@ async function testWorkerConnection() {
                 <p>设备ID: ${alarm.deviceId ? alarm.deviceId.substring(0, 12) + '...' : '未知'}</p>
             `;
             
-            // 显示响铃通知
             ringingNotification.style.display = 'block';
-            
-            // 开始响铃循环
             startRingingLoop();
             
-            // 如果页面不可见，尝试发送浏览器通知
             if (document.hidden) {
                 requestNotificationPermission().then(hasPermission => {
                     if (hasPermission) {
@@ -1151,19 +1253,15 @@ async function testWorkerConnection() {
         
         // 开始响铃循环
         function startRingingLoop() {
-            // 振动
             vibrateAlarm();
-            
-            // 播放声音
             playAlarmSound();
             
-            // 设置循环
             ringInterval = setInterval(() => {
                 if (isRinging) {
                     vibrateAlarm();
                     playAlarmSound();
                 }
-            }, 3000); // 每3秒响一次
+            }, 3000);
         }
         
         // 停止响铃
@@ -1215,7 +1313,6 @@ async function testWorkerConnection() {
         // 触发设备振动
         function vibrateAlarm() {
             if (navigator.vibrate) {
-                // 报警振动模式：振动1秒，暂停0.5秒，重复3次
                 navigator.vibrate([1000, 500, 1000, 500, 1000]);
             }
         }
@@ -1223,7 +1320,6 @@ async function testWorkerConnection() {
         // 播放报警声音
         function playAlarmSound() {
             try {
-                // 创建音频上下文
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return;
                 
@@ -1234,7 +1330,6 @@ async function testWorkerConnection() {
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                // 设置报警声音
                 oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
                 oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1);
                 oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
@@ -1245,7 +1340,6 @@ async function testWorkerConnection() {
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.5);
                 
-                // 播放两次
                 setTimeout(() => {
                     const oscillator2 = audioContext.createOscillator();
                     const gainNode2 = audioContext.createGain();
@@ -1273,12 +1367,12 @@ async function testWorkerConnection() {
             const now = Date.now();
             const diff = now - timestamp;
             
-            if (diff < 60000) { // 小于1分钟
+            if (diff < 60000) {
                 return '刚刚';
-            } else if (diff < 3600000) { // 小于1小时
+            } else if (diff < 3600000) {
                 const minutes = Math.floor(diff / 60000);
                 return `${minutes}分钟前`;
-            } else if (diff < 86400000) { // 小于1天
+            } else if (diff < 86400000) {
                 const hours = Math.floor(diff / 3600000);
                 return `${hours}小时前`;
             } else {
@@ -1300,7 +1394,6 @@ async function testWorkerConnection() {
                 statusMessage.classList.add('status-warning');
             }
             
-            // 5秒后隐藏消息
             setTimeout(() => {
                 statusMessage.style.display = 'none';
             }, 5000);
@@ -1308,18 +1401,13 @@ async function testWorkerConnection() {
         
         // 启动轮询
         function startPolling() {
-            // 清除现有的轮询
             if (pollingInterval) {
                 clearInterval(pollingInterval);
             }
             
-            // 立即获取一次
             fetchAlarms();
-            
-            // 每5秒获取一次
             pollingInterval = setInterval(fetchAlarms, 5000);
             
-            // 更新轮询状态
             pollingStatusElement.textContent = '已启动 (5秒/次)';
             pollingStatusElement.style.color = '#4caf50';
         }
@@ -1368,72 +1456,14 @@ async function testWorkerConnection() {
                 initDeviceId();
                 showStatus('本地记录已清空', 'success');
                 
-                // 重新获取报警记录
                 fetchAlarms();
             }
         }
         
-        // 事件监听器
-        alarmBtn.addEventListener('click', sendAlarm);
-        
-        homeBtn.addEventListener('click', () => {
-            // 在WebView中返回首页
-            if (window.android && window.android.goToHome) {
-                window.android.goToHome();
-            } else {
-                // 如果在浏览器中，则直接跳转
-                window.location.href = 'index.html';
-            }
-        });
-        
-        testBtn.addEventListener('click', testWorker);
-        
-        clearBtn.addEventListener('click', clearLocalRecords);
-        
-        testPushBtn.addEventListener('click', sendTestPush);
-        
-        // 响铃控制按钮
-        silenceBtn.addEventListener('click', stopRinging);
-        
-        viewAlarmBtn.addEventListener('click', () => {
-            stopRinging();
-            // 滚动到报警列表
-            document.querySelector('.alarms-list-section').scrollIntoView({ behavior: 'smooth' });
-        });
-        
-        // 添加轮询控制按钮
-        document.addEventListener('keydown', (e) => {
-            // 按空格键暂停/继续轮询
-            if (e.code === 'Space') {
-                if (pollingInterval) {
-                    stopPolling();
-                    showStatus('轮询已暂停', 'warning');
-                } else {
-                    startPolling();
-                    showStatus('轮询已恢复', 'success');
-                }
-            }
-            
-            // 按R键手动刷新
-            if (e.code === 'KeyR' && e.ctrlKey) {
-                fetchAlarms();
-                showStatus('手动刷新完成', 'success');
-            }
-            
-            // 按ESC键停止响铃
-            if (e.code === 'Escape' && isRinging) {
-                stopRinging();
-            }
-        });
+        // ==================== 事件监听器 ====================
         
         // 初始化页面
         async function initPage() {
-		
-		 // 添加除錯按鈕事件監聽
-			document.getElementById('copyTokenBtn').addEventListener('click', copyFCMToken);
-			document.getElementById('testMyTokenBtn').addEventListener('click', testWithMyToken);
-			document.getElementById('clearTokenBtn').addEventListener('click', clearTokenData);
-	
             // 初始化设备ID
             initDeviceId();
             
@@ -1470,10 +1500,8 @@ async function testWorkerConnection() {
         // 页面可见性变化时控制轮询
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // 页面隐藏时暂停轮询
                 stopPolling();
                 
-                // 如果正在响铃，尝试发送浏览器通知
                 if (isRinging && currentRingingAlarm) {
                     requestNotificationPermission().then(hasPermission => {
                         if (hasPermission) {
@@ -1482,146 +1510,10 @@ async function testWorkerConnection() {
                     });
                 }
             } else {
-                // 页面显示时恢复轮询
                 startPolling();
             }
         });
         
-		        // 複製FCM Token到剪貼簿
-        function copyFCMToken() {
-            const tokenElement = document.getElementById('fcmTokenDisplay');
-            const token = tokenElement.textContent;
-            
-            if (token === '未獲取' || token === '獲取中...') {
-                alert('還沒有獲取到FCM Token');
-                return;
-            }
-            
-            navigator.clipboard.writeText(token).then(() => {
-                showStatus('FCM Token已複製到剪貼簿', 'success');
-            }).catch(err => {
-                showStatus('複製失敗: ' + err.message, 'error');
-            });
-        }
-        
-        // 使用自己的Token測試推送
-        async function testWithMyToken() {
-            const tokenElement = document.getElementById('fcmTokenDisplay');
-            const token = tokenElement.textContent;
-            
-            if (token === '未獲取' || token === '獲取中...') {
-                showStatus('請先獲取FCM Token', 'error');
-                return;
-            }
-            
-            showStatus('正在測試您的Token...', 'warning');
-            
-            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(token)}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.success) {
-                    showStatus('✅ 測試推送已發送到您的設備', 'success');
-                    document.getElementById('tokenStatus').textContent = '測試推送成功';
-                    document.getElementById('tokenStatus').style.color = '#4caf50';
-                } else {
-                    showStatus('❌ 測試推送失敗', 'error');
-                    document.getElementById('tokenStatus').textContent = '測試推送失敗';
-                    document.getElementById('tokenStatus').style.color = '#f44336';
-                }
-            } catch (error) {
-                showStatus('測試失敗: ' + error.message, 'error');
-            }
-        }
-        
-        // 清理Token數據
-        async function clearTokenData() {
-            if (!confirm('確定要清理Token數據嗎？這會讓設備重新註冊Token。')) {
-                return;
-            }
-            
-            showStatus('正在清理Token數據...', 'warning');
-            
-            try {
-                // 清理本地存儲
-                localStorage.removeItem('deviceId');
-                
-                // 重新生成設備ID
-                deviceId = null;
-                initDeviceId();
-                
-                // 隱藏除錯區域
-                document.getElementById('debugSection').style.display = 'none';
-                
-                // 重置顯示
-                document.getElementById('fcmTokenDisplay').textContent = '未獲取';
-                document.getElementById('tokenStatus').textContent = '未註冊';
-                
-                showStatus('Token數據已清理，請重新加載頁面獲取新Token', 'success');
-            } catch (error) {
-                showStatus('清理失敗: ' + error.message, 'error');
-            }
-        }
-        
-        // 從Android App獲取Token並顯示
-        function receiveFCMTokenFromApp(token) {
-            if (!token) return;
-            
-            // 顯示除錯區域
-            document.getElementById('debugSection').style.display = 'block';
-            
-            // 顯示Token（只顯示前後部分）
-            const displayToken = token.length > 30 
-                ? token.substring(0, 15) + '...' + token.substring(token.length - 15)
-                : token;
-            
-            document.getElementById('fcmTokenDisplay').textContent = displayToken;
-            document.getElementById('fcmTokenDisplay').title = token; // 完整Token在title中
-            
-            // 註冊Token到Worker
-            registerTokenToWorker(token);
-        }
-        
-        // 註冊Token到Worker
-        async function registerTokenToWorker(token) {
-            try {
-                document.getElementById('tokenStatus').textContent = '註冊中...';
-                document.getElementById('tokenStatus').style.color = '#ff9800';
-                
-                const response = await fetch(`${WORKER_URL}?action=register_fcm`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        deviceId: deviceId,
-                        platform: 'web',
-                        appPackage: 'com.mgjack.emergencymanagement'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('tokenStatus').textContent = '已註冊';
-                    document.getElementById('tokenStatus').style.color = '#4caf50';
-                    showStatus('FCM Token註冊成功', 'success');
-                } else {
-                    document.getElementById('tokenStatus').textContent = '註冊失敗';
-                    document.getElementById('tokenStatus').style.color = '#f44336';
-                    showStatus('FCM Token註冊失敗', 'error');
-                }
-            } catch (error) {
-                document.getElementById('tokenStatus').textContent = '註冊異常';
-                document.getElementById('tokenStatus').style.color = '#f44336';
-                console.error('Token註冊失敗:', error);
-            }
-        }
-		
-		
         // 窗口关闭前清理资源
         window.addEventListener('beforeunload', () => {
             if (pollingInterval) {
@@ -1631,6 +1523,57 @@ async function testWorkerConnection() {
                 clearInterval(ringInterval);
             }
         });
+        
+        // 添加轮询控制快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (pollingInterval) {
+                    stopPolling();
+                    showStatus('轮询已暂停', 'warning');
+                } else {
+                    startPolling();
+                    showStatus('轮询已恢复', 'success');
+                }
+            }
+            
+            if (e.code === 'KeyR' && e.ctrlKey) {
+                fetchAlarms();
+                showStatus('手动刷新完成', 'success');
+            }
+            
+            if (e.code === 'Escape' && isRinging) {
+                stopRinging();
+            }
+        });
+        
+        // 绑定按钮事件
+        alarmBtn.addEventListener('click', sendAlarm);
+        homeBtn.addEventListener('click', () => {
+            if (window.android && window.android.goToHome) {
+                window.android.goToHome();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+        testBtn.addEventListener('click', testWorker);
+        clearBtn.addEventListener('click', clearLocalRecords);
+        testPushBtn.addEventListener('click', sendTestPush);
+        silenceBtn.addEventListener('click', stopRinging);
+        viewAlarmBtn.addEventListener('click', () => {
+            stopRinging();
+            document.querySelector('.alarms-list-section').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // 调试按钮事件
+        if (copyTokenBtn) {
+            copyTokenBtn.addEventListener('click', copyFCMToken);
+        }
+        if (testMyTokenBtn) {
+            testMyTokenBtn.addEventListener('click', testWithMyToken);
+        }
+        if (clearTokenBtn) {
+            clearTokenBtn.addEventListener('click', clearTokenData);
+        }
     </script>
 </body>
 </html>
