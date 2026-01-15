@@ -651,19 +651,28 @@
                 <span class="info-value" id="tokenStatus">未注册</span>
             </div>
             
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn" id="copyTokenBtn" style="background: #2196f3; color: white; flex: 1;">
-                    <i class="fas fa-copy"></i> 复制Token
-                </button>
-                
-                <button class="btn" id="testMyTokenBtn" style="background: #4caf50; color: white; flex: 1;">
-                    <i class="fas fa-bell"></i> 测试我的Token
-                </button>
-                
-                <button class="btn" id="clearTokenBtn" style="background: #f44336; color: white; flex: 1;">
-                    <i class="fas fa-trash"></i> 清理Token
-                </button>
-            </div>
+<!-- 在除錯區域的按鈕組中添加 -->
+<div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="btn" id="copyTokenBtn" style="background: #2196f3; color: white; flex: 1; min-width: 120px;">
+        <i class="fas fa-copy"></i> 複製Token
+    </button>
+    
+    <button class="btn" id="testMyTokenBtn" style="background: #4caf50; color: white; flex: 1; min-width: 120px;">
+        <i class="fas fa-bell"></i> 測試我的Token
+    </button>
+    
+    <button class="btn" id="clearTokenBtn" style="background: #f44336; color: white; flex: 1; min-width: 120px;">
+        <i class="fas fa-trash"></i> 清理Token
+    </button>
+    
+    <button class="btn" id="getTokenBtn" style="background: #9c27b0; color: white; flex: 1; min-width: 120px;">
+        <i class="fas fa-sync"></i> 手動獲取Token
+    </button>
+    
+    <button class="btn" id="debugTokenBtn" style="background: #ff9800; color: white; flex: 1; min-width: 120px;">
+        <i class="fas fa-bug"></i> Token除錯
+    </button>
+</div>
         </div>
         
         <div class="alarms-list-section">
@@ -908,6 +917,121 @@
             }
         }
         
+		async function manualGetToken() {
+    try {
+        showStatus('正在嘗試從App獲取Token...', 'warning');
+        
+        // 嘗試通過Android接口獲取
+        if (window.Android && typeof window.Android.getFCMToken === 'function') {
+            window.Android.getFCMToken();
+            showStatus('已請求App提供Token', 'success');
+            return;
+        }
+        
+        // 如果沒有Android接口，顯示提示
+        showStatus('無法直接獲取Token，請確保App已安裝並運行', 'error');
+        
+        // 嘗試從localStorage獲取之前保存的Token
+        const savedToken = localStorage.getItem('fcm_token');
+        if (savedToken) {
+            receiveFCMTokenFromApp(savedToken);
+            showStatus('使用本地保存的Token', 'warning');
+        }
+        
+    } catch (error) {
+        showStatus('獲取Token失敗: ' + error.message, 'error');
+    }
+}
+
+// Token除錯功能
+async function debugToken() {
+    try {
+        showStatus('開始Token除錯...', 'warning');
+        
+        const debugInfo = [];
+        debugInfo.push('=== Token除錯資訊 ===');
+        
+        // 1. 檢查Android接口
+        if (window.Android) {
+            debugInfo.push('✅ Android接口可用');
+            if (typeof window.Android.getFCMToken === 'function') {
+                debugInfo.push('✅ getFCMToken方法可用');
+            } else {
+                debugInfo.push('❌ getFCMToken方法不可用');
+            }
+        } else {
+            debugInfo.push('❌ Android接口不可用');
+        }
+        
+        // 2. 檢查localStorage中的Token
+        const savedToken = localStorage.getItem('fcm_token');
+        if (savedToken) {
+            debugInfo.push(`✅ 本地有保存的Token (${savedToken.length}字符)`);
+        } else {
+            debugInfo.push('❌ 本地沒有保存的Token');
+        }
+        
+        // 3. 檢查當前顯示的Token
+        const displayedToken = document.getElementById('fcmTokenDisplay').textContent;
+        debugInfo.push(`📱 當前顯示的Token: ${displayedToken}`);
+        
+        // 4. 檢查Worker Token數量
+        try {
+            const response = await fetch(`${WORKER_URL}?action=get_token_count`);
+            if (response.ok) {
+                const data = await response.json();
+                debugInfo.push(`📊 Worker Token數量: ${data.count}`);
+            }
+        } catch (error) {
+            debugInfo.push(`❌ 無法獲取Worker Token數量: ${error.message}`);
+        }
+        
+        // 顯示除錯資訊
+        alert(debugInfo.join('\n'));
+        showStatus('除錯完成', 'success');
+        
+    } catch (error) {
+        showStatus('除錯失敗: ' + error.message, 'error');
+    }
+}
+
+// 修改receiveFCMTokenFromApp函數，保存Token到localStorage
+function receiveFCMTokenFromApp(token) {
+    if (!token) return;
+    
+    // 保存到localStorage
+    localStorage.setItem('fcm_token', token);
+    
+    // 顯示除錯區域
+    document.getElementById('debugSection').style.display = 'block';
+    
+    // 顯示Token（只顯示前後部分）
+    const displayToken = token.length > 30 
+        ? token.substring(0, 15) + '...' + token.substring(token.length - 15)
+        : token;
+    
+    document.getElementById('fcmTokenDisplay').textContent = displayToken;
+    document.getElementById('fcmTokenDisplay').title = token; // 完整Token在title中
+    
+    // 更新設備型號（嘗試從token推斷）
+    const deviceModel = navigator.userAgent || '未知';
+    document.getElementById('deviceModel').textContent = deviceModel.substring(0, 30) + '...';
+    
+    // 註冊Token到Worker
+    registerTokenToWorker(token);
+}
+
+// 在initPage函數中檢查是否有保存的Token
+async function initPage() {
+    // ... 現有代碼 ...
+    
+    // 檢查localStorage中是否有保存的Token
+    const savedToken = localStorage.getItem('fcm_token');
+    if (savedToken) {
+        receiveFCMTokenFromApp(savedToken);
+    }
+		
+		
         // ==================== 主要功能函数 ====================
         
         // 初始化设备ID
@@ -1494,6 +1618,11 @@
             }, 3000);
         }
         
+		    // 添加除錯按鈕事件監聽
+    document.getElementById('getTokenBtn').addEventListener('click', manualGetToken);
+    document.getElementById('debugTokenBtn').addEventListener('click', debugToken);
+		
+		
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', initPage);
         
