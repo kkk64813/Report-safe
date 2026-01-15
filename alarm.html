@@ -771,43 +771,48 @@
         }
         
         // 测试Worker连接
-        async function testWorkerConnection() {
-            try {
-                const response = await fetch(`${WORKER_URL}?action=test`);
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.success && data.kvTest && data.kvTest.available) {
-                        connectionStatusElement.textContent = '已连接 (KV正常)';
-                        connectionStatusElement.style.color = '#4caf50';
-                        
-                        // 检查Firebase配置状态
-                        if (data.firebaseConfig && data.firebaseConfig.fcmServerKey) {
-                            pushStatusElement.textContent = '已配置 (FCM可用)';
-                            pushStatusElement.style.color = '#4caf50';
-                        } else {
-                            pushStatusElement.textContent = '未配置 (FCM不可用)';
-                            pushStatusElement.style.color = '#ff9800';
-                        }
-                        
-                        return true;
-                    } else {
-                        connectionStatusElement.textContent = '已连接 (KV异常)';
-                        connectionStatusElement.style.color = '#ff9800';
-                        return false;
-                    }
+async function testWorkerConnection() {
+    try {
+        const response = await fetch(`${WORKER_URL}?action=test`);
+        if (response.ok) {
+            const data = await response.json();
+            
+            // 新版判断逻辑：检查HTTP v1 API所需的核心配置
+            if (data.success && data.firebaseAuthTest && data.firebaseConfig.hasPrivateKey) {
+                connectionStatusElement.textContent = '已连接 (HTTP v1 API 正常)';
+                connectionStatusElement.style.color = '#4caf50';
+                
+                // 更新推送状态显示
+                pushStatusElement.textContent = '已配置 (HTTP v1 API 可用)';
+                pushStatusElement.style.color = '#4caf50';
+                
+                return true;
+            } else {
+                // 如果新版API检测失败，再按旧逻辑显示
+                connectionStatusElement.textContent = '已连接 (HTTP v1 API 配置异常)';
+                connectionStatusElement.style.color = '#ff9800';
+                
+                if (data.firebaseConfig && data.firebaseConfig.fcmServerKey) {
+                    pushStatusElement.textContent = '旧版密钥仍存在，请升级';
+                    pushStatusElement.style.color = '#ff9800';
                 } else {
-                    connectionStatusElement.textContent = '连接失败';
-                    connectionStatusElement.style.color = '#ff5252';
-                    return false;
+                    pushStatusElement.textContent = '未配置 (FCM不可用)';
+                    pushStatusElement.style.color = '#ff5252';
                 }
-            } catch (error) {
-                console.error('Worker连接测试失败:', error);
-                connectionStatusElement.textContent = '连接失败';
-                connectionStatusElement.style.color = '#ff5252';
                 return false;
             }
+        } else {
+            throw new Error(`HTTP错误: ${response.status}`);
         }
+    } catch (error) {
+        console.error('Worker连接测试失败:', error);
+        connectionStatusElement.textContent = '连接失败';
+        connectionStatusElement.style.color = '#ff5252';
+        pushStatusElement.textContent = '检测失败';
+        pushStatusElement.style.color = '#ff5252';
+        return false;
+    }
+}
         
         // 发送报警请求
         async function sendAlarm() {
