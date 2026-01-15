@@ -422,41 +422,6 @@
             line-height: 1.5;
         }
         
-        .websocket-status {
-            position: fixed;
-            bottom: 60px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 1000;
-        }
-        
-        .ws-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #888;
-        }
-        
-        .ws-dot.connected {
-            background: #4caf50;
-            animation: blink 2s infinite;
-        }
-        
-        .ws-dot.connecting {
-            background: #ff9800;
-            animation: blink 0.5s infinite;
-        }
-        
-        .ws-dot.disconnected {
-            background: #ff5252;
-        }
-        
         .ringing-notification {
             position: fixed;
             top: 50%;
@@ -622,7 +587,7 @@
 <body>
     <header>
         <h1><i class="fas fa-shield-alt"></i> 一键报警系统</h1>
-        <p class="subtitle">紧急情况下，请按下报警按钮。系统将立即记录您的报警信息并通知所有连接设备。</p>
+        <p class="subtitle">紧急情况下，请按下报警按钮。系统将立即记录您的报警信息并通过Firebase推送到所有Android设备。</p>
     </header>
     
     <div class="container">
@@ -648,8 +613,8 @@
                 <span class="info-value" id="connectionStatus">测试中...</span>
             </div>
             <div class="info-item">
-                <span class="info-label">WebSocket状态：</span>
-                <span class="info-value" id="wsStatus">连接中...</span>
+                <span class="info-label">Firebase推送：</span>
+                <span class="info-value" id="pushStatus">检查中...</span>
             </div>
             <div class="info-item">
                 <span class="info-label">您的IP地址：</span>
@@ -691,6 +656,9 @@
             <button class="btn history-btn" id="clearBtn">
                 <i class="fas fa-trash"></i> 清空本地记录
             </button>
+            <button class="btn" id="testPushBtn" style="background: linear-gradient(to right, #4caf50, #2e7d32); color: white;">
+                <i class="fas fa-bell"></i> 测试推送
+            </button>
         </div>
     </div>
     
@@ -713,12 +681,6 @@
         </div>
     </div>
     
-    <!-- WebSocket状态指示器 -->
-    <div class="websocket-status" id="wsStatusIndicator">
-        <div class="ws-dot" id="wsDot"></div>
-        <span>实时连接: <span id="wsStatusText">连接中...</span></span>
-    </div>
-    
     <!-- 轮询状态指示器 -->
     <div class="polling-status" id="pollingStatusIndicator">
         <div class="polling-dot" id="pollingDot"></div>
@@ -727,7 +689,7 @@
     
     <footer>
         <p>© 2023 安全报警系统 | 紧急联系电话: 110 | 设计用于: https://kkk64813.github.io/Report-safe/</p>
-        <p>Worker连接: https://alarm.mgjack13.workers.dev/ | 实时服务: wss://alarm-websocket.glitch.me | 轮询间隔: 5秒</p>
+        <p>Worker连接: https://alarm.mgjack13.workers.dev/ | Firebase推送: 支持 | 轮询间隔: 5秒</p>
     </footer>
 
     <script>
@@ -736,11 +698,12 @@
         const homeBtn = document.getElementById('homeBtn');
         const testBtn = document.getElementById('testBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const testPushBtn = document.getElementById('testPushBtn');
         const workerUrlElement = document.getElementById('workerUrl');
         const ipAddressElement = document.getElementById('ipAddress');
         const deviceIdElement = document.getElementById('deviceId');
         const connectionStatusElement = document.getElementById('connectionStatus');
-        const wsStatusElement = document.getElementById('wsStatus');
+        const pushStatusElement = document.getElementById('pushStatus');
         const pollingStatusElement = document.getElementById('pollingStatus');
         const alarmsListElement = document.getElementById('alarmsList');
         const alarmsCountElement = document.getElementById('alarmsCount');
@@ -748,26 +711,19 @@
         const pollingStatusIndicator = document.getElementById('pollingStatusIndicator');
         const pollingDot = document.getElementById('pollingDot');
         const lastPollTimeElement = document.getElementById('lastPollTime');
-        const wsStatusIndicator = document.getElementById('wsStatusIndicator');
-        const wsDot = document.getElementById('wsDot');
-        const wsStatusText = document.getElementById('wsStatusText');
         const ringingNotification = document.getElementById('ringingNotification');
         const ringingDetails = document.getElementById('ringingDetails');
         const silenceBtn = document.getElementById('silenceBtn');
         const viewAlarmBtn = document.getElementById('viewAlarmBtn');
         
-        // Worker URL 和 WebSocket URL
+        // Worker URL
         const WORKER_URL = 'https://alarm.mgjack13.workers.dev/';
-        const WS_SERVER = 'wss://alarm-websocket.glitch.me'; // 使用免费的WebSocket服务器
         
         // 全局变量
         let deviceId = localStorage.getItem('deviceId');
         let pollingInterval = null;
         let lastPollTime = 0;
         let knownAlarmIds = new Set();
-        let ws = null;
-        let wsReconnectAttempts = 0;
-        const MAX_WS_RECONNECT_ATTEMPTS = 10;
         let isRinging = false;
         let ringInterval = null;
         let currentRingingAlarm = null;
@@ -780,258 +736,6 @@
             }
             deviceIdElement.textContent = deviceId.substring(0, 20) + '...';
             deviceIdElement.title = deviceId;
-        }
-        
-        // 初始化WebSocket连接
-        function initWebSocket() {
-            if (ws) {
-                ws.close();
-            }
-            
-            updateWsStatus('connecting', '连接中...');
-            
-            try {
-                ws = new WebSocket(WS_SERVER);
-                
-                ws.onopen = () => {
-                    wsReconnectAttempts = 0;
-                    updateWsStatus('connected', '已连接');
-                    
-                    // 发送设备注册信息
-                    ws.send(JSON.stringify({
-                        type: 'register',
-                        deviceId: deviceId,
-                        deviceType: 'web'
-                    }));
-                    
-                    showStatus('实时连接已建立', 'success');
-                };
-                
-                ws.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        handleWebSocketMessage(data);
-                    } catch (e) {
-                        console.error('WebSocket消息解析失败:', e);
-                    }
-                };
-                
-                ws.onclose = () => {
-                    updateWsStatus('disconnected', '已断开');
-                    
-                    // 尝试重新连接
-                    if (wsReconnectAttempts < MAX_WS_RECONNECT_ATTEMPTS) {
-                        wsReconnectAttempts++;
-                        const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts), 30000);
-                        
-                        setTimeout(() => {
-                            showStatus(`正在重新连接实时服务 (${wsReconnectAttempts}/${MAX_WS_RECONNECT_ATTEMPTS})...`, 'warning');
-                            initWebSocket();
-                        }, delay);
-                    } else {
-                        showStatus('实时连接失败，请刷新页面重试', 'error');
-                    }
-                };
-                
-                ws.onerror = (error) => {
-                    console.error('WebSocket错误:', error);
-                    updateWsStatus('error', '连接错误');
-                };
-                
-            } catch (error) {
-                console.error('WebSocket初始化失败:', error);
-                updateWsStatus('error', '初始化失败');
-            }
-        }
-        
-        // 处理WebSocket消息
-        function handleWebSocketMessage(data) {
-            switch (data.type) {
-                case 'alarm':
-                    // 收到报警通知
-                    handleNewAlarm(data.alarm);
-                    break;
-                    
-                case 'alarm_broadcast':
-                    // 收到广播报警（来自其他设备）
-                    handleBroadcastAlarm(data.alarm);
-                    break;
-                    
-                case 'ping':
-                    // 心跳响应
-                    ws.send(JSON.stringify({ type: 'pong', deviceId: deviceId }));
-                    break;
-                    
-                case 'registered':
-                    // 注册成功
-                    showStatus('实时通知服务已激活', 'success');
-                    break;
-                    
-                case 'error':
-                    console.error('WebSocket服务器错误:', data.message);
-                    break;
-            }
-        }
-        
-        // 处理新报警
-        function handleNewAlarm(alarm) {
-            // 如果这不是当前设备触发的报警
-            if (alarm.deviceId !== deviceId) {
-                // 显示响铃通知
-                triggerRinging(alarm);
-                
-                // 显示通知
-                showAlarmNotification([alarm]);
-                
-                // 触发振动
-                vibrateAlarm();
-                
-                // 播放报警声音
-                playAlarmSound();
-                
-                // 添加到已知报警列表
-                knownAlarmIds.add(alarm.id);
-                
-                // 更新报警列表
-                fetchAlarms();
-            }
-        }
-        
-        // 处理广播报警
-        function handleBroadcastAlarm(alarm) {
-            // 显示广播通知
-            showBroadcastNotification(alarm);
-            
-            // 如果这不是当前设备触发的报警，触发响铃
-            if (alarm.deviceId !== deviceId) {
-                triggerRinging(alarm);
-                vibrateAlarm();
-                playAlarmSound();
-            }
-            
-            // 更新报警列表
-            fetchAlarms();
-        }
-        
-        // 触发响铃
-        function triggerRinging(alarm) {
-            if (isRinging) return; // 已经在响铃中
-            
-            isRinging = true;
-            currentRingingAlarm = alarm;
-            
-            // 更新响铃通知内容
-            const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
-            ringingDetails.innerHTML = `
-                <p>时间: ${alarmTime}</p>
-                <p>IP: ${alarm.ip || '未知'}</p>
-                <p>设备ID: ${alarm.deviceId ? alarm.deviceId.substring(0, 12) + '...' : '未知'}</p>
-            `;
-            
-            // 显示响铃通知
-            ringingNotification.style.display = 'block';
-            
-            // 开始响铃循环
-            startRingingLoop();
-            
-            // 如果页面不可见，尝试发送浏览器通知
-            if (document.hidden) {
-                requestNotificationPermission().then(hasPermission => {
-                    if (hasPermission) {
-                        showBrowserNotification(alarm);
-                    }
-                });
-            }
-        }
-        
-        // 开始响铃循环
-        function startRingingLoop() {
-            // 振动
-            vibrateAlarm();
-            
-            // 播放声音
-            playAlarmSound();
-            
-            // 设置循环
-            ringInterval = setInterval(() => {
-                if (isRinging) {
-                    vibrateAlarm();
-                    playAlarmSound();
-                }
-            }, 3000); // 每3秒响一次
-        }
-        
-        // 停止响铃
-        function stopRinging() {
-            isRinging = false;
-            currentRingingAlarm = null;
-            ringingNotification.style.display = 'none';
-            
-            if (ringInterval) {
-                clearInterval(ringInterval);
-                ringInterval = null;
-            }
-        }
-        
-        // 请求浏览器通知权限
-        async function requestNotificationPermission() {
-            if (!("Notification" in window)) {
-                return false;
-            }
-            
-            if (Notification.permission === "granted") {
-                return true;
-            } else if (Notification.permission !== "denied") {
-                const permission = await Notification.requestPermission();
-                return permission === "granted";
-            }
-            
-            return false;
-        }
-        
-        // 显示浏览器通知
-        function showBrowserNotification(alarm) {
-            if (!("Notification" in window)) return;
-            
-            const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
-            const notification = new Notification("紧急报警通知", {
-                body: `收到新的紧急报警\n时间: ${alarmTime}\nIP: ${alarm.ip || '未知'}`,
-                icon: 'https://img.icons8.com/color/96/000000/siren.png',
-                tag: 'alarm-notification',
-                requireInteraction: true
-            });
-            
-            notification.onclick = () => {
-                window.focus();
-                stopRinging();
-            };
-        }
-        
-        // 广播报警到其他设备
-        function broadcastAlarm(alarmData) {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'alarm',
-                    alarm: alarmData,
-                    deviceId: deviceId
-                }));
-            }
-        }
-        
-        // 更新WebSocket状态显示
-        function updateWsStatus(status, text) {
-            wsDot.className = 'ws-dot';
-            wsDot.classList.add(status);
-            wsStatusText.textContent = text;
-            wsStatusElement.textContent = text;
-            
-            if (status === 'connected') {
-                wsStatusElement.style.color = '#4caf50';
-            } else if (status === 'connecting') {
-                wsStatusElement.style.color = '#ff9800';
-            } else {
-                wsStatusElement.style.color = '#ff5252';
-            }
         }
         
         // 获取用户IP地址
@@ -1076,6 +780,16 @@
                     if (data.success && data.kvTest && data.kvTest.available) {
                         connectionStatusElement.textContent = '已连接 (KV正常)';
                         connectionStatusElement.style.color = '#4caf50';
+                        
+                        // 检查Firebase配置状态
+                        if (data.firebaseConfig && data.firebaseConfig.fcmServerKey) {
+                            pushStatusElement.textContent = '已配置 (FCM可用)';
+                            pushStatusElement.style.color = '#4caf50';
+                        } else {
+                            pushStatusElement.textContent = '未配置 (FCM不可用)';
+                            pushStatusElement.style.color = '#ff9800';
+                        }
+                        
                         return true;
                     } else {
                         connectionStatusElement.textContent = '已连接 (KV异常)';
@@ -1118,7 +832,9 @@
                     time: alarmTime,
                     timestamp: now.getTime(),
                     deviceId: deviceId,
-                    id: alarmId
+                    id: alarmId,
+                    notification_title: '🚨 紧急报警通知',
+                    notification_body: `报警时间: ${alarmTime}\nIP地址: ${userIP}\n请立即查看！`
                 };
                 
                 // 发送报警到Worker
@@ -1139,10 +855,12 @@
                 
                 if (response.ok && result.success) {
                     // 报警成功
-                    showStatus('报警已发送！所有设备将收到通知。', 'success');
+                    let message = '报警已发送！';
+                    if (result.pushSent && result.firebase_result) {
+                        message += ` 已推送 ${result.firebase_result.sent_count || 0} 台设备`;
+                    }
                     
-                    // 广播到其他设备
-                    broadcastAlarm(alarmData);
+                    showStatus(message, 'success');
                     
                     // 立即获取最新报警记录
                     await fetchAlarms();
@@ -1164,6 +882,29 @@
                 console.error('报警发送失败:', error);
                 showStatus(`报警发送失败: ${error.message}`, 'error');
                 return false;
+            }
+        }
+        
+        // 发送测试推送
+        async function sendTestPush() {
+            try {
+                showStatus('正在发送测试推送...', 'warning');
+                
+                const response = await fetch(`${WORKER_URL}?action=send_test_notification&deviceId=${encodeURIComponent(deviceId)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus(`测试推送已发送到 ${data.sent_count || 0} 台设备`, 'success');
+                    } else {
+                        showStatus('测试推送失败', 'error');
+                    }
+                } else {
+                    showStatus('发送测试推送失败', 'error');
+                }
+            } catch (error) {
+                console.error('发送测试推送失败:', error);
+                showStatus(`发送测试推送失败: ${error.message}`, 'error');
             }
         }
         
@@ -1278,6 +1019,12 @@
                 newAlarms.forEach(alarm => {
                     knownAlarmIds.add(alarm.id);
                 });
+                
+                // 如果是新报警且不是当前设备触发的，触发响铃
+                const newExternalAlarms = newAlarms.filter(alarm => alarm.deviceId !== deviceId);
+                if (newExternalAlarms.length > 0 && !isRinging) {
+                    triggerRinging(newExternalAlarms[0]);
+                }
             }
         }
         
@@ -1329,47 +1076,98 @@
             }, 10000);
         }
         
-        // 显示广播通知
-        function showBroadcastNotification(alarm) {
-            const existingNotifications = document.querySelectorAll('.notification:not(.ringing-notification)');
-            existingNotifications.forEach(notification => {
-                notification.remove();
-            });
+        // 触发响铃
+        function triggerRinging(alarm) {
+            if (isRinging) return; // 已经在响铃中
             
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.style.borderLeft = '5px solid #2196f3';
+            isRinging = true;
+            currentRingingAlarm = alarm;
             
+            // 更新响铃通知内容
             const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
-            const timeAgo = getTimeAgo(alarm.timestamp);
-            
-            notification.innerHTML = `
-                <div class="notification-header">
-                    <div class="notification-title">
-                        <i class="fas fa-broadcast-tower"></i>
-                        <span>广播报警</span>
-                    </div>
-                    <button class="close-notification">&times;</button>
-                </div>
-                <div class="notification-content">
-                    <p>收到来自其他设备的报警</p>
-                    <p>时间: ${timeAgo}前</p>
-                    <p>IP: ${alarm.ip || '未知'}</p>
-                    <p><small>${alarmTime}</small></p>
-                </div>
+            ringingDetails.innerHTML = `
+                <p>时间: ${alarmTime}</p>
+                <p>IP: ${alarm.ip || '未知'}</p>
+                <p>设备ID: ${alarm.deviceId ? alarm.deviceId.substring(0, 12) + '...' : '未知'}</p>
             `;
             
-            document.body.appendChild(notification);
+            // 显示响铃通知
+            ringingNotification.style.display = 'block';
             
-            notification.querySelector('.close-notification').addEventListener('click', () => {
-                notification.remove();
+            // 开始响铃循环
+            startRingingLoop();
+            
+            // 如果页面不可见，尝试发送浏览器通知
+            if (document.hidden) {
+                requestNotificationPermission().then(hasPermission => {
+                    if (hasPermission) {
+                        showBrowserNotification(alarm);
+                    }
+                });
+            }
+        }
+        
+        // 开始响铃循环
+        function startRingingLoop() {
+            // 振动
+            vibrateAlarm();
+            
+            // 播放声音
+            playAlarmSound();
+            
+            // 设置循环
+            ringInterval = setInterval(() => {
+                if (isRinging) {
+                    vibrateAlarm();
+                    playAlarmSound();
+                }
+            }, 3000); // 每3秒响一次
+        }
+        
+        // 停止响铃
+        function stopRinging() {
+            isRinging = false;
+            currentRingingAlarm = null;
+            ringingNotification.style.display = 'none';
+            
+            if (ringInterval) {
+                clearInterval(ringInterval);
+                ringInterval = null;
+            }
+        }
+        
+        // 请求浏览器通知权限
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                return false;
+            }
+            
+            if (Notification.permission === "granted") {
+                return true;
+            } else if (Notification.permission !== "denied") {
+                const permission = await Notification.requestPermission();
+                return permission === "granted";
+            }
+            
+            return false;
+        }
+        
+        // 显示浏览器通知
+        function showBrowserNotification(alarm) {
+            if (!("Notification" in window)) return;
+            
+            const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
+            const notification = new Notification("紧急报警通知", {
+                body: `收到新的紧急报警\n时间: ${alarmTime}\nIP: ${alarm.ip || '未知'}`,
+                icon: 'https://img.icons8.com/color/96/000000/siren.png',
+                tag: 'alarm-notification',
+                requireInteraction: true
             });
             
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 10000);
+            notification.onclick = () => {
+                window.focus();
+                stopRinging();
+            };
         }
         
         // 触发设备振动
@@ -1506,7 +1304,9 @@
                     let message = `Worker测试成功！\n`;
                     message += `KV状态: ${data.kvTest.available ? '正常' : '异常'}\n`;
                     message += `报警记录数: ${data.currentData.historyCount}\n`;
-                    message += `最新报警: ${data.currentData.hasLatestAlarm ? '有' : '无'}`;
+                    message += `Firebase配置: ${data.firebaseConfig.fcmServerKey ? '已配置' : '未配置'}\n`;
+                    message += `设备数: ${data.currentData.deviceCount}\n`;
+                    message += `Token数: ${data.currentData.tokenCount}`;
                     
                     alert(message);
                     showStatus('Worker测试完成', 'success');
@@ -1547,6 +1347,8 @@
         testBtn.addEventListener('click', testWorker);
         
         clearBtn.addEventListener('click', clearLocalRecords);
+        
+        testPushBtn.addEventListener('click', sendTestPush);
         
         // 响铃控制按钮
         silenceBtn.addEventListener('click', stopRinging);
@@ -1592,9 +1394,6 @@
             
             // 测试Worker连接
             await testWorkerConnection();
-            
-            // 初始化WebSocket连接
-            initWebSocket();
             
             // 启动轮询
             startPolling();
@@ -1642,9 +1441,6 @@
         
         // 窗口关闭前清理资源
         window.addEventListener('beforeunload', () => {
-            if (ws) {
-                ws.close();
-            }
             if (pollingInterval) {
                 clearInterval(pollingInterval);
             }
