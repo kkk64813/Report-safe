@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -629,6 +629,43 @@
                 <span class="info-value" id="pollingStatus">未启动</span>
             </div>
         </div>
+		
+		<!-- 添加除錯區域 -->
+		<div class="debug-section" style="background: rgba(0,0,0,0.3); padding: 15px; margin-top: 20px; border-radius: 10px;" id="debugSection">
+    <h2 class="info-title" style="color: #ff9800;">
+        <i class="fas fa-bug"></i> 除錯資訊
+    </h2>
+    
+    <div class="info-item">
+        <span class="info-label">FCM Token：</span>
+        <span class="info-value" id="fcmTokenDisplay">未獲取</span>
+    </div>
+    
+    <div class="info-item">
+        <span class="info-label">設備型號：</span>
+        <span class="info-value" id="deviceModel">未知</span>
+    </div>
+    
+    <div class="info-item">
+        <span class="info-label">Token狀態：</span>
+        <span class="info-value" id="tokenStatus">未註冊</span>
+    </div>
+    
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button class="btn" onclick="copyFCMToken()" style="background: #2196f3; color: white; flex: 1;">
+            <i class="fas fa-copy"></i> 複製Token
+        </button>
+        
+        <button class="btn" onclick="testWithMyToken()" style="background: #4caf50; color: white; flex: 1;">
+            <i class="fas fa-bell"></i> 測試我的Token
+        </button>
+        
+        <button class="btn" onclick="clearTokenData()" style="background: #f44336; color: white; flex: 1;">
+            <i class="fas fa-trash"></i> 清理Token
+        </button>
+    </div>
+</div>
+
         
         <div class="alarms-list-section">
             <div class="alarms-list-title">
@@ -1391,6 +1428,12 @@ async function testWorkerConnection() {
         
         // 初始化页面
         async function initPage() {
+		
+		 // 添加除錯按鈕事件監聽
+			document.getElementById('copyTokenBtn').addEventListener('click', copyFCMToken);
+			document.getElementById('testMyTokenBtn').addEventListener('click', testWithMyToken);
+			document.getElementById('clearTokenBtn').addEventListener('click', clearTokenData);
+	
             // 初始化设备ID
             initDeviceId();
             
@@ -1444,6 +1487,141 @@ async function testWorkerConnection() {
             }
         });
         
+		        // 複製FCM Token到剪貼簿
+        function copyFCMToken() {
+            const tokenElement = document.getElementById('fcmTokenDisplay');
+            const token = tokenElement.textContent;
+            
+            if (token === '未獲取' || token === '獲取中...') {
+                alert('還沒有獲取到FCM Token');
+                return;
+            }
+            
+            navigator.clipboard.writeText(token).then(() => {
+                showStatus('FCM Token已複製到剪貼簿', 'success');
+            }).catch(err => {
+                showStatus('複製失敗: ' + err.message, 'error');
+            });
+        }
+        
+        // 使用自己的Token測試推送
+        async function testWithMyToken() {
+            const tokenElement = document.getElementById('fcmTokenDisplay');
+            const token = tokenElement.textContent;
+            
+            if (token === '未獲取' || token === '獲取中...') {
+                showStatus('請先獲取FCM Token', 'error');
+                return;
+            }
+            
+            showStatus('正在測試您的Token...', 'warning');
+            
+            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(token)}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('✅ 測試推送已發送到您的設備', 'success');
+                    document.getElementById('tokenStatus').textContent = '測試推送成功';
+                    document.getElementById('tokenStatus').style.color = '#4caf50';
+                } else {
+                    showStatus('❌ 測試推送失敗', 'error');
+                    document.getElementById('tokenStatus').textContent = '測試推送失敗';
+                    document.getElementById('tokenStatus').style.color = '#f44336';
+                }
+            } catch (error) {
+                showStatus('測試失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 清理Token數據
+        async function clearTokenData() {
+            if (!confirm('確定要清理Token數據嗎？這會讓設備重新註冊Token。')) {
+                return;
+            }
+            
+            showStatus('正在清理Token數據...', 'warning');
+            
+            try {
+                // 清理本地存儲
+                localStorage.removeItem('deviceId');
+                
+                // 重新生成設備ID
+                deviceId = null;
+                initDeviceId();
+                
+                // 隱藏除錯區域
+                document.getElementById('debugSection').style.display = 'none';
+                
+                // 重置顯示
+                document.getElementById('fcmTokenDisplay').textContent = '未獲取';
+                document.getElementById('tokenStatus').textContent = '未註冊';
+                
+                showStatus('Token數據已清理，請重新加載頁面獲取新Token', 'success');
+            } catch (error) {
+                showStatus('清理失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 從Android App獲取Token並顯示
+        function receiveFCMTokenFromApp(token) {
+            if (!token) return;
+            
+            // 顯示除錯區域
+            document.getElementById('debugSection').style.display = 'block';
+            
+            // 顯示Token（只顯示前後部分）
+            const displayToken = token.length > 30 
+                ? token.substring(0, 15) + '...' + token.substring(token.length - 15)
+                : token;
+            
+            document.getElementById('fcmTokenDisplay').textContent = displayToken;
+            document.getElementById('fcmTokenDisplay').title = token; // 完整Token在title中
+            
+            // 註冊Token到Worker
+            registerTokenToWorker(token);
+        }
+        
+        // 註冊Token到Worker
+        async function registerTokenToWorker(token) {
+            try {
+                document.getElementById('tokenStatus').textContent = '註冊中...';
+                document.getElementById('tokenStatus').style.color = '#ff9800';
+                
+                const response = await fetch(`${WORKER_URL}?action=register_fcm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        deviceId: deviceId,
+                        platform: 'web',
+                        appPackage: 'com.mgjack.emergencymanagement'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('tokenStatus').textContent = '已註冊';
+                    document.getElementById('tokenStatus').style.color = '#4caf50';
+                    showStatus('FCM Token註冊成功', 'success');
+                } else {
+                    document.getElementById('tokenStatus').textContent = '註冊失敗';
+                    document.getElementById('tokenStatus').style.color = '#f44336';
+                    showStatus('FCM Token註冊失敗', 'error');
+                }
+            } catch (error) {
+                document.getElementById('tokenStatus').textContent = '註冊異常';
+                document.getElementById('tokenStatus').style.color = '#f44336';
+                console.error('Token註冊失敗:', error);
+            }
+        }
+		
+		
         // 窗口关闭前清理资源
         window.addEventListener('beforeunload', () => {
             if (pollingInterval) {
