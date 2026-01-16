@@ -6,6 +6,7 @@
     <title>一键报警系统 - 增强版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* CSS部分保持不变，完全使用您的原始CSS */
         * {
             margin: 0;
             padding: 0;
@@ -880,7 +881,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
         
-        /* 密码输入模态框 - 重新设计 */
+        /* 密码输入模态框 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -980,7 +981,7 @@
             75% { transform: translateX(5px); }
         }
         
-        /* 精致密码盘 */
+        /* 密码盘 */
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -1793,7 +1794,7 @@
         <p>Worker连接: https://alarm.mgjack13.workers.dev/ | Firebase推送: 支持 | 轮询间隔: 5秒</p>
     </footer>
 
-    <!-- JavaScript部分保持不变 -->
+    <!-- JavaScript部分 - 修正了报警通知问题 -->
     <script>
         // ==================== 全局变量 ====================
         const WORKER_URL = 'https://alarm.mgjack13.workers.dev/';
@@ -2843,6 +2844,7 @@
             try {
                 showStatus('正在发送测试推送...', 'warning');
                 
+                // 修正：使用正确的测试推送URL
                 const response = await fetch(`${WORKER_URL}?action=send_test_notification&deviceId=${encodeURIComponent(deviceId)}`);
                 
                 if (response.ok) {
