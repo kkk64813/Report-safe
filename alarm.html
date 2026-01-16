@@ -1575,91 +1575,95 @@
             }
         }
         
-        // 验证报警密码
-        async function validateAlarmPassword() {
-            try {
-                // 从服务器获取密码哈希进行验证
-                const response = await fetch(`${WORKER_URL}?action=validate_password&type=alarm`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        password: currentPassword,
-                        deviceId: deviceId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 密码正确，激活报警按钮
-                    activateAlarmButton();
-                    hidePasswordModal();
-                    showStatus('报警按钮已激活，10秒内有效', 'success');
-                } else {
-                    // 密码错误
-                    showPasswordError('密码错误，请重新输入');
-                }
-            } catch (error) {
-                console.error('密码验证失败:', error);
-                // 如果网络错误，使用本地默认密码（仅用于测试）
-                if (currentPassword === DEFAULT_ALARM_PASSWORD) {
-                    activateAlarmButton();
-                    hidePasswordModal();
-                    showStatus('报警按钮已激活，10秒内有效', 'success');
-                } else {
-                    showPasswordError('密码错误，请重新输入');
-                }
-            }
-        }
+// 验证报警密码 - 修复版本
+async function validateAlarmPassword() {
+  try {
+    // 从服务器获取密码哈希进行验证
+    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        password: currentPassword,
+        type: 'alarm',
+        deviceId: deviceId
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // 密码正确，激活报警按钮
+      activateAlarmButton();
+      hidePasswordModal();
+      showStatus('报警按钮已激活，10秒内有效', 'success');
+    } else {
+      // 密码错误
+      showPasswordError('密码错误，请重新输入');
+    }
+  } catch (error) {
+    console.error('密码验证失败:', error);
+    // 如果网络错误，使用本地默认密码（仅用于测试）
+    if (currentPassword === DEFAULT_ALARM_PASSWORD) {
+      activateAlarmButton();
+      hidePasswordModal();
+      showStatus('报警按钮已激活，10秒内有效', 'success');
+    } else {
+      showPasswordError('密码错误，请重新输入');
+    }
+  }
+}
         
-        // 验证管理员密码
-        async function validateAdminPassword() {
-            try {
-                // 从服务器获取密码哈希进行验证
-                const response = await fetch(`${WORKER_URL}?action=validate_password&type=admin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        password: currentPassword,
-                        deviceId: deviceId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 密码正确，进入管理页面
-                    adminLoggedIn = true;
-                    hidePasswordModal();
-                    showAdminSection();
-                    showStatus('管理员登录成功', 'success');
-                    
-                    // 记录管理员登录
-                    logAdminAction('管理员登录');
-                } else {
-                    // 密码错误
-                    showAdminPasswordError('管理员密码错误');
-                }
-            } catch (error) {
-                console.error('管理员密码验证失败:', error);
-                // 如果网络错误，使用本地默认密码（仅用于测试）
-                if (currentPassword === DEFAULT_ADMIN_PASSWORD) {
-                    adminLoggedIn = true;
-                    hidePasswordModal();
-                    showAdminSection();
-                    showStatus('管理员登录成功', 'success');
-                    
-                    // 记录管理员登录
-                    logAdminAction('管理员登录');
-                } else {
-                    showAdminPasswordError('管理员密码错误');
-                }
-            }
-        }
+
+// 验证管理员密码 - 修复版本
+async function validateAdminPassword() {
+  try {
+    // 从服务器获取密码哈希进行验证
+    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        password: currentPassword,
+        type: 'admin',
+        deviceId: deviceId
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // 密码正确，进入管理页面
+      adminLoggedIn = true;
+      hidePasswordModal();
+      showAdminSection();
+      showStatus('管理员登录成功', 'success');
+      
+      // 记录管理员登录
+      logAdminAction('管理员登录');
+    } else {
+      // 密码错误
+      showAdminPasswordError('管理员密码错误');
+    }
+  } catch (error) {
+    console.error('管理员密码验证失败:', error);
+    // 如果网络错误，使用本地默认密码（仅用于测试）
+    if (currentPassword === DEFAULT_ADMIN_PASSWORD) {
+      adminLoggedIn = true;
+      hidePasswordModal();
+      showAdminSection();
+      showStatus('管理员登录成功', 'success');
+      
+      // 记录管理员登录
+      logAdminAction('管理员登录');
+    } else {
+      showAdminPasswordError('管理员密码错误');
+    }
+  }
+}
+
         
         // 显示密码错误
         function showPasswordError(message) {
