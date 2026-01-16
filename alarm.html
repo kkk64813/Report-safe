@@ -103,6 +103,26 @@
             animation: pulse 1.5s infinite;
         }
         
+        .alarm-button.disabled {
+            background: linear-gradient(145deg, #666, #444);
+            cursor: not-allowed;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .alarm-button.disabled:hover {
+            transform: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .alarm-button.admin-active {
+            background: linear-gradient(145deg, #9c27b0, #7b1fa2);
+            box-shadow: 0 0 40px rgba(156, 39, 176, 0.6);
+        }
+        
+        .alarm-button.admin-active:hover {
+            box-shadow: 0 0 60px rgba(156, 39, 176, 0.8);
+        }
+        
         @keyframes pulse {
             0% { box-shadow: 0 0 40px rgba(255, 82, 82, 0.6); }
             50% { box-shadow: 0 0 80px rgba(255, 82, 82, 0.9); }
@@ -118,6 +138,17 @@
             font-size: 1.8rem;
             font-weight: 700;
             letter-spacing: 2px;
+        }
+        
+        .alarm-countdown {
+            position: absolute;
+            bottom: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffcc80;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
         
         .warning-text {
@@ -141,6 +172,7 @@
             margin-bottom: 15px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
             color: #bbdefb;
         }
@@ -203,6 +235,10 @@
             transform: translateX(5px);
         }
         
+        .alarm-item.admin-alarm {
+            border-left-color: #9c27b0;
+        }
+        
         .alarm-item-header {
             display: flex;
             justify-content: space-between;
@@ -223,6 +259,10 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+        }
+        
+        .alarm-status.admin {
+            background: #9c27b0;
         }
         
         .alarm-details {
@@ -300,6 +340,16 @@
         
         .test-btn:hover {
             background: linear-gradient(to right, #f57c00, #d84315);
+            transform: translateY(-2px);
+        }
+        
+        .admin-btn {
+            background: linear-gradient(to right, #9c27b0, #7b1fa2);
+            color: white;
+        }
+        
+        .admin-btn:hover {
+            background: linear-gradient(to right, #8e24aa, #6a1b9a);
             transform: translateY(-2px);
         }
         
@@ -524,6 +574,22 @@
             padding: 15px;
             margin-top: 20px;
             border-radius: 10px;
+            display: none; /* 默认隐藏 */
+        }
+        
+        .debug-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .debug-toggle:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
         
         .debug-buttons {
@@ -547,6 +613,307 @@
             gap: 8px;
             flex: 1;
             min-width: 140px;
+        }
+        
+        /* 密码输入模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            display: none;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .password-input-container {
+            margin: 20px 0;
+        }
+        
+        .password-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .password-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .password-dot.filled {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        
+        .password-dot.error {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .keypad-btn {
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .keypad-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .keypad-btn:active {
+            transform: translateY(0);
+        }
+        
+        .keypad-btn.clear {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .keypad-btn.clear:hover {
+            background: rgba(244, 67, 54, 0.3);
+        }
+        
+        .keypad-btn.backspace {
+            background: rgba(255, 152, 0, 0.2);
+            border-color: rgba(255, 152, 0, 0.5);
+        }
+        
+        .keypad-btn.backspace:hover {
+            background: rgba(255, 152, 0, 0.3);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .modal-btn {
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            flex: 1;
+        }
+        
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .modal-btn.cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-btn.submit {
+            background: linear-gradient(to right, #4caf50, #2e7d32);
+            color: white;
+        }
+        
+        .modal-btn.submit:hover {
+            background: linear-gradient(to right, #43a047, #1b5e20);
+        }
+        
+        .modal-btn.logout {
+            background: linear-gradient(to right, #f44336, #c62828);
+            color: white;
+        }
+        
+        .modal-btn.logout:hover {
+            background: linear-gradient(to right, #e53935, #b71c1c);
+        }
+        
+        /* 管理页面样式 */
+        .admin-section {
+            display: none;
+        }
+        
+        .admin-section.active {
+            display: block;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .admin-tab {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .admin-tab.active {
+            background: linear-gradient(to right, #9c27b0, #7b1fa2);
+        }
+        
+        .admin-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #bbdefb;
+        }
+        
+        .form-input {
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #9c27b0;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .admin-log-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .log-item.alarm {
+            border-left-color: #ff5252;
+        }
+        
+        .log-item.admin {
+            border-left-color: #9c27b0;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .log-time {
+            font-weight: 600;
+            color: #ffcc80;
+        }
+        
+        .log-type {
+            background: #2196f3;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .log-type.alarm {
+            background: #ff5252;
+        }
+        
+        .log-type.admin {
+            background: #9c27b0;
+        }
+        
+        .log-details {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .log-ip {
+            font-family: 'Courier New', monospace;
+            color: #64b5f6;
+            margin-top: 5px;
         }
         
         @media (max-width: 768px) {
@@ -585,6 +952,15 @@
             .debug-btn {
                 min-width: 100%;
             }
+            
+            .admin-tabs {
+                flex-direction: column;
+            }
+            
+            .keypad-btn {
+                padding: 15px;
+                font-size: 1.3rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -616,6 +992,10 @@
             .ringing-title {
                 font-size: 1.5rem;
             }
+            
+            .modal-content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -627,14 +1007,24 @@
     
     <div class="container">
         <div class="alarm-section">
-            <button class="alarm-button" id="alarmBtn">
+            <button class="alarm-button disabled" id="alarmBtn">
                 <i class="fas fa-bell"></i>
                 <span class="alarm-button-text">一键报警</span>
+                <div class="alarm-countdown" id="alarmCountdown" style="display: none;">10秒后失效</div>
             </button>
             
             <p class="warning-text">
                 <i class="fas fa-exclamation-triangle"></i> 警告：此按钮仅在紧急情况下使用。误报可能导致不必要的恐慌和资源浪费。
             </p>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn" id="activateBtn" style="background: linear-gradient(to right, #4caf50, #2e7d32); color: white;">
+                    <i class="fas fa-key"></i> 输入密码激活报警按钮
+                </button>
+                <button class="btn admin-btn" id="adminBtn">
+                    <i class="fas fa-user-cog"></i> 管理员
+                </button>
+            </div>
         </div>
         
         <div class="info-section">
@@ -663,29 +1053,19 @@
                 <span class="info-label">轮询状态：</span>
                 <span class="info-value" id="pollingStatus">未启动</span>
             </div>
+            <div class="info-item">
+                <span class="info-label">报警状态：</span>
+                <span class="info-value" id="alarmStatus">需要激活</span>
+            </div>
         </div>
         
         <!-- 调试区域 -->
-        <div class="debug-section" id="debugSection" style="display: none;">
-            <h2 class="info-title" style="color: #ff9800;">
-                <i class="fas fa-bug"></i> 调试信息
-            </h2>
-            
-            <div class="info-item">
-                <span class="info-label">FCM Token：</span>
-                <span class="info-value" id="fcmTokenDisplay" title="">未获取</span>
-            </div>
-            
-            <div class="info-item">
-                <span class="info-label">设备型号：</span>
-                <span class="info-value" id="deviceModel">未知</span>
-            </div>
-            
-            <div class="info-item">
-                <span class="info-label">Token状态：</span>
-                <span class="info-value" id="tokenStatus">未注册</span>
-            </div>
-            
+        <div class="debug-toggle" id="debugToggle">
+            <span><i class="fas fa-bug"></i> 调试信息</span>
+            <span><i class="fas fa-chevron-down"></i></span>
+        </div>
+        
+        <div class="debug-section" id="debugSection">
             <div class="debug-buttons">
                 <button class="debug-btn" id="askAppForTokenBtn" style="background: #9c27b0; color: white;">
                     <i class="fas fa-mobile-alt"></i> 向App要Token
@@ -714,6 +1094,85 @@
                 <button class="debug-btn" id="debugTokenBtn" style="background: #607d8b; color: white;">
                     <i class="fas fa-wrench"></i> Token调试
                 </button>
+            </div>
+        </div>
+        
+        <!-- 管理页面 -->
+        <div class="admin-section" id="adminSection">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="logs"><i class="fas fa-history"></i> 系统日志</button>
+                <button class="admin-tab" data-tab="settings"><i class="fas fa-cog"></i> 系统设置</button>
+                <button class="admin-tab" data-tab="admin-alarm"><i class="fas fa-bell"></i> 管理员报警</button>
+            </div>
+            
+            <!-- 日志页面 -->
+            <div class="admin-panel" id="logsPanel">
+                <h2 class="info-title"><i class="fas fa-history"></i> 系统日志</h2>
+                <div class="admin-log-list" id="adminLogList">
+                    <div class="no-alarms">
+                        <i class="fas fa-clock"></i>
+                        <p>暂无日志记录</p>
+                        <p>正在加载...</p>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="modal-btn cancel" id="refreshLogsBtn">
+                        <i class="fas fa-sync"></i> 刷新日志
+                    </button>
+                    <button class="modal-btn logout" id="clearLogsBtn">
+                        <i class="fas fa-trash"></i> 清空日志
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 设置页面 -->
+            <div class="admin-panel" id="settingsPanel" style="display: none;">
+                <h2 class="info-title"><i class="fas fa-cog"></i> 系统设置</h2>
+                <div class="admin-form">
+                    <div class="form-group">
+                        <label class="form-label">修改管理员密码</label>
+                        <input type="password" class="form-input" id="adminCurrentPassword" placeholder="当前密码">
+                        <input type="password" class="form-input" id="adminNewPassword" placeholder="新密码（6位数字）">
+                        <input type="password" class="form-input" id="adminConfirmPassword" placeholder="确认新密码">
+                    </div>
+                    <div class="form-actions">
+                        <button class="modal-btn cancel" id="cancelAdminPasswordBtn">取消</button>
+                        <button class="modal-btn submit" id="updateAdminPasswordBtn">更新管理员密码</button>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <label class="form-label">修改报警密码</label>
+                        <input type="password" class="form-input" id="alarmCurrentPassword" placeholder="当前密码">
+                        <input type="password" class="form-input" id="alarmNewPassword" placeholder="新密码（6位数字）">
+                        <input type="password" class="form-input" id="alarmConfirmPassword" placeholder="确认新密码">
+                    </div>
+                    <div class="form-actions">
+                        <button class="modal-btn cancel" id="cancelAlarmPasswordBtn">取消</button>
+                        <button class="modal-btn submit" id="updateAlarmPasswordBtn">更新报警密码</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 管理员报警页面 -->
+            <div class="admin-panel" id="adminAlarmPanel" style="display: none;">
+                <h2 class="info-title"><i class="fas fa-bell"></i> 管理员报警</h2>
+                <p style="margin-bottom: 20px; color: #ffcc80;">在此页面输入管理员密码后，可以激活3分钟的管理员报警权限。</p>
+                
+                <div class="form-group">
+                    <label class="form-label">输入管理员密码</label>
+                    <input type="password" class="form-input" id="adminAlarmPassword" placeholder="请输入管理员密码">
+                </div>
+                
+                <div class="form-actions">
+                    <button class="modal-btn cancel" id="cancelAdminAlarmBtn">取消</button>
+                    <button class="modal-btn submit" id="activateAdminAlarmBtn">激活管理员报警</button>
+                </div>
+                
+                <div style="margin-top: 30px; padding: 20px; background: rgba(156, 39, 176, 0.2); border-radius: 10px; display: none;" id="adminAlarmStatus">
+                    <h3 style="color: #ce93d8; margin-bottom: 10px;"><i class="fas fa-user-shield"></i> 管理员报警已激活</h3>
+                    <p>报警按钮已变为紫色，有效时间: <span id="adminAlarmTimer">180</span>秒</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px; color: #ffcc80;">现在可以返回主页面使用管理员报警功能</p>
+                </div>
             </div>
         </div>
         
@@ -746,6 +1205,84 @@
             <button class="btn" id="testPushBtn" style="background: linear-gradient(to right, #4caf50, #2e7d32); color: white;">
                 <i class="fas fa-bell"></i> 测试推送
             </button>
+        </div>
+    </div>
+    
+    <!-- 密码输入模态框 -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-content">
+            <h2 class="modal-title"><i class="fas fa-key"></i> 输入密码</h2>
+            <div class="password-input-container">
+                <div class="password-display" id="passwordDisplay">
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                </div>
+                
+                <div class="keypad">
+                    <button class="keypad-btn" data-key="1">1</button>
+                    <button class="keypad-btn" data-key="2">2</button>
+                    <button class="keypad-btn" data-key="3">3</button>
+                    <button class="keypad-btn" data-key="4">4</button>
+                    <button class="keypad-btn" data-key="5">5</button>
+                    <button class="keypad-btn" data-key="6">6</button>
+                    <button class="keypad-btn" data-key="7">7</button>
+                    <button class="keypad-btn" data-key="8">8</button>
+                    <button class="keypad-btn" data-key="9">9</button>
+                    <button class="keypad-btn clear" id="clearPasswordBtn"><i class="fas fa-times"></i></button>
+                    <button class="keypad-btn" data-key="0">0</button>
+                    <button class="keypad-btn backspace" id="backspaceBtn"><i class="fas fa-backspace"></i></button>
+                </div>
+                
+                <p id="passwordMessage" style="text-align: center; margin-top: 20px; min-height: 24px; color: #ffcc80;"></p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelPasswordBtn">取消</button>
+                <button class="modal-btn submit" id="submitPasswordBtn">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 管理员登录模态框 -->
+    <div class="modal-overlay" id="adminLoginModal">
+        <div class="modal-content">
+            <h2 class="modal-title"><i class="fas fa-user-shield"></i> 管理员登录</h2>
+            <div class="password-input-container">
+                <div class="password-display" id="adminPasswordDisplay">
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                    <div class="password-dot"></div>
+                </div>
+                
+                <div class="keypad">
+                    <button class="keypad-btn" data-key="1">1</button>
+                    <button class="keypad-btn" data-key="2">2</button>
+                    <button class="keypad-btn" data-key="3">3</button>
+                    <button class="keypad-btn" data-key="4">4</button>
+                    <button class="keypad-btn" data-key="5">5</button>
+                    <button class="keypad-btn" data-key="6">6</button>
+                    <button class="keypad-btn" data-key="7">7</button>
+                    <button class="keypad-btn" data-key="8">8</button>
+                    <button class="keypad-btn" data-key="9">9</button>
+                    <button class="keypad-btn clear" id="clearAdminPasswordBtn"><i class="fas fa-times"></i></button>
+                    <button class="keypad-btn" data-key="0">0</button>
+                    <button class="keypad-btn backspace" id="adminBackspaceBtn"><i class="fas fa-backspace"></i></button>
+                </div>
+                
+                <p id="adminPasswordMessage" style="text-align: center; margin-top: 20px; min-height: 24px; color: #ffcc80;"></p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelAdminLoginBtn">取消</button>
+                <button class="modal-btn submit" id="submitAdminLoginBtn">登录</button>
+            </div>
         </div>
     </div>
     
@@ -785,6 +1322,8 @@
         
         // 获取页面元素
         const alarmBtn = document.getElementById('alarmBtn');
+        const activateBtn = document.getElementById('activateBtn');
+        const adminBtn = document.getElementById('adminBtn');
         const homeBtn = document.getElementById('homeBtn');
         const testBtn = document.getElementById('testBtn');
         const clearBtn = document.getElementById('clearBtn');
@@ -795,6 +1334,7 @@
         const connectionStatusElement = document.getElementById('connectionStatus');
         const pushStatusElement = document.getElementById('pushStatus');
         const pollingStatusElement = document.getElementById('pollingStatus');
+        const alarmStatusElement = document.getElementById('alarmStatus');
         const alarmsListElement = document.getElementById('alarmsList');
         const alarmsCountElement = document.getElementById('alarmsCount');
         const statusMessage = document.getElementById('statusMessage');
@@ -805,8 +1345,11 @@
         const ringingDetails = document.getElementById('ringingDetails');
         const silenceBtn = document.getElementById('silenceBtn');
         const viewAlarmBtn = document.getElementById('viewAlarmBtn');
+        const alarmCountdown = document.getElementById('alarmCountdown');
         
         // 调试按钮
+        const debugToggle = document.getElementById('debugToggle');
+        const debugSection = document.getElementById('debugSection');
         const askAppForTokenBtn = document.getElementById('askAppForTokenBtn');
         const showAppTokenBtn = document.getElementById('showAppTokenBtn');
         const copyTokenBtn = document.getElementById('copyTokenBtn');
@@ -814,7 +1357,49 @@
         const clearTokenBtn = document.getElementById('clearTokenBtn');
         const manualGetTokenBtn = document.getElementById('manualGetTokenBtn');
         const debugTokenBtn = document.getElementById('debugTokenBtn');
-        const debugSection = document.getElementById('debugSection');
+        
+        // 密码输入相关元素
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordDisplay = document.getElementById('passwordDisplay');
+        const passwordMessage = document.getElementById('passwordMessage');
+        const clearPasswordBtn = document.getElementById('clearPasswordBtn');
+        const backspaceBtn = document.getElementById('backspaceBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+        const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+        
+        // 管理员登录相关元素
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const adminPasswordDisplay = document.getElementById('adminPasswordDisplay');
+        const adminPasswordMessage = document.getElementById('adminPasswordMessage');
+        const clearAdminPasswordBtn = document.getElementById('clearAdminPasswordBtn');
+        const adminBackspaceBtn = document.getElementById('adminBackspaceBtn');
+        const cancelAdminLoginBtn = document.getElementById('cancelAdminLoginBtn');
+        const submitAdminLoginBtn = document.getElementById('submitAdminLoginBtn');
+        
+        // 管理页面相关元素
+        const adminSection = document.getElementById('adminSection');
+        const adminTabs = document.querySelectorAll('.admin-tab');
+        const logsPanel = document.getElementById('logsPanel');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const adminAlarmPanel = document.getElementById('adminAlarmPanel');
+        const adminLogList = document.getElementById('adminLogList');
+        const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+        const clearLogsBtn = document.getElementById('clearLogsBtn');
+        const adminCurrentPassword = document.getElementById('adminCurrentPassword');
+        const adminNewPassword = document.getElementById('adminNewPassword');
+        const adminConfirmPassword = document.getElementById('adminConfirmPassword');
+        const updateAdminPasswordBtn = document.getElementById('updateAdminPasswordBtn');
+        const cancelAdminPasswordBtn = document.getElementById('cancelAdminPasswordBtn');
+        const alarmCurrentPassword = document.getElementById('alarmCurrentPassword');
+        const alarmNewPassword = document.getElementById('alarmNewPassword');
+        const alarmConfirmPassword = document.getElementById('alarmConfirmPassword');
+        const updateAlarmPasswordBtn = document.getElementById('updateAlarmPasswordBtn');
+        const cancelAlarmPasswordBtn = document.getElementById('cancelAlarmPasswordBtn');
+        const adminAlarmPassword = document.getElementById('adminAlarmPassword');
+        const activateAdminAlarmBtn = document.getElementById('activateAdminAlarmBtn');
+        const cancelAdminAlarmBtn = document.getElementById('cancelAdminAlarmBtn');
+        const adminAlarmStatus = document.getElementById('adminAlarmStatus');
+        const adminAlarmTimer = document.getElementById('adminAlarmTimer');
         
         // 全局变量
         let deviceId = localStorage.getItem('deviceId');
@@ -824,6 +1409,23 @@
         let isRinging = false;
         let ringInterval = null;
         let currentRingingAlarm = null;
+        
+        // 密码相关变量
+        let currentPassword = '';
+        let passwordMode = 'alarm'; // 'alarm' 或 'admin'
+        let alarmActive = false;
+        let alarmActiveTimeout = null;
+        let alarmCountdownInterval = null;
+        let alarmActiveTimeLeft = 10;
+        let adminLoggedIn = false;
+        let adminAlarmActive = false;
+        let adminAlarmTimeout = null;
+        let adminAlarmCountdownInterval = null;
+        let adminAlarmTimeLeft = 180;
+        
+        // 默认密码（实际使用中应该从服务器获取）
+        const DEFAULT_ALARM_PASSWORD = '951028';
+        const DEFAULT_ADMIN_PASSWORD = '820421';
         
         // ==================== 初始化函数 ====================
         
@@ -869,10 +1471,652 @@
                 receiveFCMTokenFromApp(savedToken);
             }
             
+            // 初始化报警按钮状态
+            updateAlarmButtonState();
+            
+            // 加载日志
+            loadAdminLogs();
+            
             // 显示轮询控制提示
             setTimeout(() => {
                 showStatus('提示：按空格键可暂停/继续轮询，按Ctrl+R手动刷新，按ESC停止响铃', 'warning');
             }, 3000);
+        }
+        
+        // ==================== 密码管理函数 ====================
+        
+        // 显示密码输入模态框
+        function showPasswordModal(mode) {
+            passwordMode = mode;
+            currentPassword = '';
+            updatePasswordDisplay();
+            
+            if (mode === 'alarm') {
+                passwordModal.style.display = 'flex';
+                passwordMessage.textContent = '请输入6位报警密码';
+                passwordMessage.style.color = '#ffcc80';
+            } else if (mode === 'admin') {
+                adminLoginModal.style.display = 'flex';
+                adminPasswordMessage.textContent = '请输入6位管理员密码';
+                adminPasswordMessage.style.color = '#ffcc80';
+            }
+        }
+        
+        // 隐藏密码输入模态框
+        function hidePasswordModal() {
+            passwordModal.style.display = 'none';
+            adminLoginModal.style.display = 'none';
+        }
+        
+        // 更新密码显示
+        function updatePasswordDisplay() {
+            const dots = passwordMode === 'alarm' 
+                ? passwordDisplay.querySelectorAll('.password-dot')
+                : adminPasswordDisplay.querySelectorAll('.password-dot');
+            
+            dots.forEach((dot, index) => {
+                if (index < currentPassword.length) {
+                    dot.classList.add('filled');
+                    dot.classList.remove('error');
+                } else {
+                    dot.classList.remove('filled');
+                    dot.classList.remove('error');
+                }
+            });
+            
+            // 更新提交按钮状态
+            if (passwordMode === 'alarm') {
+                submitPasswordBtn.disabled = currentPassword.length !== 6;
+            } else {
+                submitAdminLoginBtn.disabled = currentPassword.length !== 6;
+            }
+        }
+        
+        // 处理密码输入
+        function handlePasswordInput(key) {
+            if (currentPassword.length < 6) {
+                currentPassword += key;
+                updatePasswordDisplay();
+                
+                // 如果输入了6位数字，自动验证
+                if (currentPassword.length === 6) {
+                    if (passwordMode === 'alarm') {
+                        setTimeout(() => validateAlarmPassword(), 300);
+                    } else {
+                        setTimeout(() => validateAdminPassword(), 300);
+                    }
+                }
+            }
+        }
+        
+        // 清除密码
+        function clearPassword() {
+            currentPassword = '';
+            updatePasswordDisplay();
+            
+            if (passwordMode === 'alarm') {
+                passwordMessage.textContent = '';
+            } else {
+                adminPasswordMessage.textContent = '';
+            }
+        }
+        
+        // 删除最后一位
+        function backspacePassword() {
+            if (currentPassword.length > 0) {
+                currentPassword = currentPassword.slice(0, -1);
+                updatePasswordDisplay();
+                
+                if (passwordMode === 'alarm') {
+                    passwordMessage.textContent = '';
+                } else {
+                    adminPasswordMessage.textContent = '';
+                }
+            }
+        }
+        
+        // 验证报警密码
+        async function validateAlarmPassword() {
+            try {
+                // 从服务器获取密码哈希进行验证
+                const response = await fetch(`${WORKER_URL}?action=validate_password&type=alarm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: currentPassword,
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 密码正确，激活报警按钮
+                    activateAlarmButton();
+                    hidePasswordModal();
+                    showStatus('报警按钮已激活，10秒内有效', 'success');
+                } else {
+                    // 密码错误
+                    showPasswordError('密码错误，请重新输入');
+                }
+            } catch (error) {
+                console.error('密码验证失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (currentPassword === DEFAULT_ALARM_PASSWORD) {
+                    activateAlarmButton();
+                    hidePasswordModal();
+                    showStatus('报警按钮已激活，10秒内有效', 'success');
+                } else {
+                    showPasswordError('密码错误，请重新输入');
+                }
+            }
+        }
+        
+        // 验证管理员密码
+        async function validateAdminPassword() {
+            try {
+                // 从服务器获取密码哈希进行验证
+                const response = await fetch(`${WORKER_URL}?action=validate_password&type=admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: currentPassword,
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 密码正确，进入管理页面
+                    adminLoggedIn = true;
+                    hidePasswordModal();
+                    showAdminSection();
+                    showStatus('管理员登录成功', 'success');
+                    
+                    // 记录管理员登录
+                    logAdminAction('管理员登录');
+                } else {
+                    // 密码错误
+                    showAdminPasswordError('管理员密码错误');
+                }
+            } catch (error) {
+                console.error('管理员密码验证失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (currentPassword === DEFAULT_ADMIN_PASSWORD) {
+                    adminLoggedIn = true;
+                    hidePasswordModal();
+                    showAdminSection();
+                    showStatus('管理员登录成功', 'success');
+                    
+                    // 记录管理员登录
+                    logAdminAction('管理员登录');
+                } else {
+                    showAdminPasswordError('管理员密码错误');
+                }
+            }
+        }
+        
+        // 显示密码错误
+        function showPasswordError(message) {
+            const dots = passwordDisplay.querySelectorAll('.password-dot');
+            dots.forEach(dot => {
+                dot.classList.add('error');
+            });
+            
+            passwordMessage.textContent = message;
+            passwordMessage.style.color = '#f44336';
+            
+            // 3秒后清除错误状态
+            setTimeout(() => {
+                clearPassword();
+                passwordMessage.textContent = '请输入6位报警密码';
+                passwordMessage.style.color = '#ffcc80';
+            }, 3000);
+        }
+        
+        // 显示管理员密码错误
+        function showAdminPasswordError(message) {
+            const dots = adminPasswordDisplay.querySelectorAll('.password-dot');
+            dots.forEach(dot => {
+                dot.classList.add('error');
+            });
+            
+            adminPasswordMessage.textContent = message;
+            adminPasswordMessage.style.color = '#f44336';
+            
+            // 3秒后清除错误状态
+            setTimeout(() => {
+                clearPassword();
+                adminPasswordMessage.textContent = '请输入6位管理员密码';
+                adminPasswordMessage.style.color = '#ffcc80';
+            }, 3000);
+        }
+        
+        // 激活报警按钮
+        function activateAlarmButton() {
+            alarmActive = true;
+            alarmActiveTimeLeft = 10;
+            
+            // 更新按钮状态
+            alarmBtn.classList.remove('disabled');
+            alarmBtn.classList.add('pressed');
+            alarmStatusElement.textContent = '已激活 (10秒)';
+            alarmStatusElement.style.color = '#4caf50';
+            
+            // 显示倒计时
+            alarmCountdown.style.display = 'block';
+            alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
+            
+            // 启动倒计时
+            alarmCountdownInterval = setInterval(() => {
+                alarmActiveTimeLeft--;
+                alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
+                alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
+                
+                if (alarmActiveTimeLeft <= 0) {
+                    deactivateAlarmButton();
+                }
+            }, 1000);
+            
+            // 设置10秒后自动失效
+            alarmActiveTimeout = setTimeout(() => {
+                deactivateAlarmButton();
+            }, 10000);
+        }
+        
+        // 停用报警按钮
+        function deactivateAlarmButton() {
+            alarmActive = false;
+            
+            // 清除定时器
+            if (alarmActiveTimeout) {
+                clearTimeout(alarmActiveTimeout);
+                alarmActiveTimeout = null;
+            }
+            
+            if (alarmCountdownInterval) {
+                clearInterval(alarmCountdownInterval);
+                alarmCountdownInterval = null;
+            }
+            
+            // 更新按钮状态
+            alarmBtn.classList.add('disabled');
+            alarmBtn.classList.remove('pressed');
+            alarmBtn.classList.remove('admin-active');
+            alarmStatusElement.textContent = '需要激活';
+            alarmStatusElement.style.color = '#ff5252';
+            
+            // 隐藏倒计时
+            alarmCountdown.style.display = 'none';
+        }
+        
+        // 更新报警按钮状态
+        function updateAlarmButtonState() {
+            if (adminAlarmActive) {
+                alarmBtn.classList.remove('disabled');
+                alarmBtn.classList.add('admin-active');
+                alarmStatusElement.textContent = `管理员报警已激活 (${adminAlarmTimeLeft}秒)`;
+                alarmStatusElement.style.color = '#9c27b0';
+            } else if (alarmActive) {
+                alarmBtn.classList.remove('disabled');
+                alarmBtn.classList.remove('admin-active');
+                alarmBtn.classList.add('pressed');
+                alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
+                alarmStatusElement.style.color = '#4caf50';
+            } else {
+                alarmBtn.classList.add('disabled');
+                alarmBtn.classList.remove('admin-active');
+                alarmBtn.classList.remove('pressed');
+                alarmStatusElement.textContent = '需要激活';
+                alarmStatusElement.style.color = '#ff5252';
+            }
+        }
+        
+        // ==================== 管理页面函数 ====================
+        
+        // 显示管理页面
+        function showAdminSection() {
+            adminSection.classList.add('active');
+            switchAdminTab('logs');
+        }
+        
+        // 隐藏管理页面
+        function hideAdminSection() {
+            adminSection.classList.remove('active');
+            adminLoggedIn = false;
+        }
+        
+        // 切换管理页面标签
+        function switchAdminTab(tabName) {
+            // 更新标签状态
+            adminTabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // 显示对应面板
+            logsPanel.style.display = tabName === 'logs' ? 'block' : 'none';
+            settingsPanel.style.display = tabName === 'settings' ? 'block' : 'none';
+            adminAlarmPanel.style.display = tabName === 'admin-alarm' ? 'block' : 'none';
+        }
+        
+        // 加载管理员日志
+        async function loadAdminLogs() {
+            try {
+                const response = await fetch(`${WORKER_URL}?action=get_logs&limit=50`);
+                const data = await response.json();
+                
+                if (data.success && data.logs && data.logs.length > 0) {
+                    displayAdminLogs(data.logs);
+                } else {
+                    adminLogList.innerHTML = `
+                        <div class="no-alarms">
+                            <i class="fas fa-clock"></i>
+                            <p>暂无日志记录</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载日志失败:', error);
+                adminLogList.innerHTML = `
+                    <div class="no-alarms">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>加载日志失败</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 显示管理员日志
+        function displayAdminLogs(logs) {
+            adminLogList.innerHTML = '';
+            
+            logs.forEach(log => {
+                const logItem = document.createElement('div');
+                logItem.className = `log-item ${log.type || ''}`;
+                
+                const logTime = new Date(log.timestamp).toLocaleString('zh-CN');
+                const logType = log.type === 'alarm' ? '报警' : 
+                               log.type === 'admin' ? '管理员' : '系统';
+                const logTypeClass = log.type || 'system';
+                
+                logItem.innerHTML = `
+                    <div class="log-header">
+                        <div class="log-time">${logTime}</div>
+                        <div class="log-type ${logTypeClass}">${logType}</div>
+                    </div>
+                    <div class="log-details">
+                        ${log.message || '无详细信息'}
+                        ${log.ip ? `<div class="log-ip">IP: ${log.ip}</div>` : ''}
+                        ${log.deviceId ? `<div class="log-ip">设备ID: ${log.deviceId.substring(0, 12)}...</div>` : ''}
+                    </div>
+                `;
+                
+                adminLogList.appendChild(logItem);
+            });
+        }
+        
+        // 记录管理员操作
+        async function logAdminAction(action, details = '') {
+            try {
+                const userIP = ipAddressElement.textContent;
+                await fetch(`${WORKER_URL}?action=log_action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'admin',
+                        message: action,
+                        details: details,
+                        ip: userIP,
+                        deviceId: deviceId,
+                        timestamp: Date.now()
+                    })
+                });
+            } catch (error) {
+                console.error('记录管理员操作失败:', error);
+            }
+        }
+        
+        // 更新管理员密码
+        async function updateAdminPassword() {
+            const current = adminCurrentPassword.value;
+            const newPass = adminNewPassword.value;
+            const confirm = adminConfirmPassword.value;
+            
+            if (!current || !newPass || !confirm) {
+                showStatus('请填写所有字段', 'error');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showStatus('新密码与确认密码不一致', 'error');
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(newPass)) {
+                showStatus('新密码必须是6位数字', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${WORKER_URL}?action=update_admin_password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: current,
+                        newPassword: newPass,
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('管理员密码更新成功', 'success');
+                    adminCurrentPassword.value = '';
+                    adminNewPassword.value = '';
+                    adminConfirmPassword.value = '';
+                    
+                    // 记录操作
+                    logAdminAction('修改管理员密码');
+                } else {
+                    showStatus('密码更新失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('更新管理员密码失败:', error);
+                showStatus('更新失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 更新报警密码
+        async function updateAlarmPassword() {
+            const current = alarmCurrentPassword.value;
+            const newPass = alarmNewPassword.value;
+            const confirm = alarmConfirmPassword.value;
+            
+            if (!current || !newPass || !confirm) {
+                showStatus('请填写所有字段', 'error');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showStatus('新密码与确认密码不一致', 'error');
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(newPass)) {
+                showStatus('新密码必须是6位数字', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${WORKER_URL}?action=update_alarm_password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: current,
+                        newPassword: newPass,
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('报警密码更新成功', 'success');
+                    alarmCurrentPassword.value = '';
+                    alarmNewPassword.value = '';
+                    alarmConfirmPassword.value = '';
+                    
+                    // 记录操作
+                    logAdminAction('修改报警密码');
+                } else {
+                    showStatus('密码更新失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('更新报警密码失败:', error);
+                showStatus('更新失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 激活管理员报警
+        async function activateAdminAlarm() {
+            const password = adminAlarmPassword.value;
+            
+            if (!password) {
+                showStatus('请输入管理员密码', 'error');
+                return;
+            }
+            
+            try {
+                // 验证管理员密码
+                const response = await fetch(`${WORKER_URL}?action=validate_password&type=admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 激活管理员报警
+                    adminAlarmActive = true;
+                    adminAlarmTimeLeft = 180;
+                    adminAlarmPassword.value = '';
+                    
+                    // 显示激活状态
+                    adminAlarmStatus.style.display = 'block';
+                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                    
+                    // 更新主页面报警按钮
+                    updateAlarmButtonState();
+                    
+                    // 启动倒计时
+                    adminAlarmCountdownInterval = setInterval(() => {
+                        adminAlarmTimeLeft--;
+                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                        updateAlarmButtonState();
+                        
+                        if (adminAlarmTimeLeft <= 0) {
+                            deactivateAdminAlarm();
+                        }
+                    }, 1000);
+                    
+                    // 设置3分钟后自动失效
+                    adminAlarmTimeout = setTimeout(() => {
+                        deactivateAdminAlarm();
+                    }, 180000);
+                    
+                    showStatus('管理员报警已激活，3分钟内有效', 'success');
+                    
+                    // 记录操作
+                    logAdminAction('激活管理员报警');
+                } else {
+                    showStatus('管理员密码错误', 'error');
+                }
+            } catch (error) {
+                console.error('激活管理员报警失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (password === DEFAULT_ADMIN_PASSWORD) {
+                    adminAlarmActive = true;
+                    adminAlarmTimeLeft = 180;
+                    adminAlarmPassword.value = '';
+                    
+                    // 显示激活状态
+                    adminAlarmStatus.style.display = 'block';
+                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                    
+                    // 更新主页面报警按钮
+                    updateAlarmButtonState();
+                    
+                    // 启动倒计时
+                    adminAlarmCountdownInterval = setInterval(() => {
+                        adminAlarmTimeLeft--;
+                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                        updateAlarmButtonState();
+                        
+                        if (adminAlarmTimeLeft <= 0) {
+                            deactivateAdminAlarm();
+                        }
+                    }, 1000);
+                    
+                    // 设置3分钟后自动失效
+                    adminAlarmTimeout = setTimeout(() => {
+                        deactivateAdminAlarm();
+                    }, 180000);
+                    
+                    showStatus('管理员报警已激活，3分钟内有效', 'success');
+                    
+                    // 记录操作
+                    logAdminAction('激活管理员报警');
+                } else {
+                    showStatus('管理员密码错误', 'error');
+                }
+            }
+        }
+        
+        // 停用管理员报警
+        function deactivateAdminAlarm() {
+            adminAlarmActive = false;
+            
+            // 清除定时器
+            if (adminAlarmTimeout) {
+                clearTimeout(adminAlarmTimeout);
+                adminAlarmTimeout = null;
+            }
+            
+            if (adminAlarmCountdownInterval) {
+                clearInterval(adminAlarmCountdownInterval);
+                adminAlarmCountdownInterval = null;
+            }
+            
+            // 隐藏激活状态
+            adminAlarmStatus.style.display = 'none';
+            
+            // 更新主页面报警按钮
+            updateAlarmButtonState();
+            
+            showStatus('管理员报警权限已失效', 'warning');
         }
         
         // ==================== Token管理函数 ====================
@@ -995,18 +2239,6 @@
             // 显示调试区域
             debugSection.style.display = 'block';
             
-            // 显示Token（只显示前后部分）
-            const displayToken = token.length > 30 
-                ? token.substring(0, 15) + '...' + token.substring(token.length - 15)
-                : token;
-            
-            document.getElementById('fcmTokenDisplay').textContent = displayToken;
-            document.getElementById('fcmTokenDisplay').title = token; // 完整Token在title中
-            
-            // 更新设备型号
-            const deviceModel = navigator.userAgent || '未知';
-            document.getElementById('deviceModel').textContent = deviceModel.substring(0, 30) + '...';
-            
             // 注册Token到Worker
             registerTokenToWorker(token);
             
@@ -1016,9 +2248,6 @@
         // 注册Token到Worker
         async function registerTokenToWorker(token) {
             try {
-                document.getElementById('tokenStatus').textContent = '注册中...';
-                document.getElementById('tokenStatus').style.color = '#ff9800';
-                
                 const response = await fetch(`${WORKER_URL}?action=register_fcm`, {
                     method: 'POST',
                     headers: {
@@ -1035,17 +2264,11 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    document.getElementById('tokenStatus').textContent = '已注册';
-                    document.getElementById('tokenStatus').style.color = '#4caf50';
                     showStatus('FCM Token注册成功', 'success');
                 } else {
-                    document.getElementById('tokenStatus').textContent = '注册失败';
-                    document.getElementById('tokenStatus').style.color = '#f44336';
                     showStatus('FCM Token注册失败: ' + (data.error || '未知错误'), 'error');
                 }
             } catch (error) {
-                document.getElementById('tokenStatus').textContent = '注册异常';
-                document.getElementById('tokenStatus').style.color = '#f44336';
                 console.error('Token注册失败:', error);
                 showStatus('Token注册异常: ' + error.message, 'error');
             }
@@ -1053,18 +2276,14 @@
         
         // 复制Token到剪贴板
         function copyTokenToClipboard() {
-            const tokenElement = document.getElementById('fcmTokenDisplay');
-            const token = tokenElement.textContent;
+            const savedToken = localStorage.getItem('fcm_token');
             
-            if (token === '未获取' || token === '获取中...') {
+            if (!savedToken) {
                 showStatus('还没有获取到FCM Token', 'error');
                 return;
             }
             
-            // 获取完整token（存储在title属性中）
-            const fullToken = tokenElement.title || token;
-            
-            navigator.clipboard.writeText(fullToken).then(() => {
+            navigator.clipboard.writeText(savedToken).then(() => {
                 showStatus('FCM Token已复制到剪贴板', 'success');
             }).catch(err => {
                 showStatus('复制失败: ' + err.message, 'error');
@@ -1073,19 +2292,16 @@
         
         // 使用自己的Token测试推送
         async function testWithMyToken() {
-            const tokenElement = document.getElementById('fcmTokenDisplay');
-            const token = tokenElement.textContent;
+            const savedToken = localStorage.getItem('fcm_token');
             
-            if (token === '未获取' || token === '获取中...') {
+            if (!savedToken) {
                 showStatus('请先获取FCM Token', 'error');
                 return;
             }
             
             showStatus('正在测试您的Token...', 'warning');
             
-            // 获取完整token（存储在title属性中）
-            const fullToken = tokenElement.title || token;
-            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(fullToken)}`;
+            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(savedToken)}`;
             
             try {
                 const response = await fetch(url);
@@ -1093,12 +2309,8 @@
                 
                 if (data.success) {
                     showStatus('✅ 测试推送已发送到您的设备', 'success');
-                    document.getElementById('tokenStatus').textContent = '测试推送成功';
-                    document.getElementById('tokenStatus').style.color = '#4caf50';
                 } else {
                     showStatus('❌ 测试推送失败: ' + (data.error || '未知错误'), 'error');
-                    document.getElementById('tokenStatus').textContent = '测试推送失败';
-                    document.getElementById('tokenStatus').style.color = '#f44336';
                 }
             } catch (error) {
                 showStatus('测试失败: ' + error.message, 'error');
@@ -1116,11 +2328,6 @@
             try {
                 // 清理本地存储
                 localStorage.removeItem('fcm_token');
-                
-                // 重置显示
-                document.getElementById('fcmTokenDisplay').textContent = '未获取';
-                document.getElementById('tokenStatus').textContent = '未注册';
-                document.getElementById('tokenStatus').style.color = '';
                 
                 showStatus('Token数据已清理，请重新获取Token', 'success');
             } catch (error) {
@@ -1140,13 +2347,6 @@
                 // 1. 检查Android接口
                 if (window.Android) {
                     debugInfo.push('✅ Android接口可用');
-                    const androidMethods = [];
-                    for (let prop in window.Android) {
-                        if (typeof window.Android[prop] === 'function') {
-                            androidMethods.push(prop);
-                        }
-                    }
-                    debugInfo.push(`可用方法: ${androidMethods.join(', ')}`);
                 } else {
                     debugInfo.push('❌ Android接口不可用');
                 }
@@ -1159,20 +2359,15 @@
                     debugInfo.push('❌ 本地没有保存的Token');
                 }
                 
-                // 3. 检查当前显示的Token
-                const displayedToken = document.getElementById('fcmTokenDisplay').textContent;
-                debugInfo.push(`📱 当前显示的Token: ${displayedToken}`);
-                
-                // 4. 检查设备信息
+                // 3. 检查设备信息
                 debugInfo.push(`📱 用户代理: ${navigator.userAgent.substring(0, 50)}...`);
                 
-                // 5. 尝试检查Worker状态
+                // 4. 尝试检查Worker状态
                 try {
                     const response = await fetch(`${WORKER_URL}?action=test`);
                     if (response.ok) {
                         const data = await response.json();
                         debugInfo.push(`📊 Worker状态: 正常`);
-                        debugInfo.push(`📊 当前Token数量: ${data.currentData?.tokenCount || '未知'}`);
                     }
                 } catch (error) {
                     debugInfo.push(`❌ 无法连接Worker: ${error.message}`);
@@ -1264,6 +2459,12 @@
         
         // 发送报警请求
         async function sendAlarm() {
+            // 检查报警按钮状态
+            if (!alarmActive && !adminAlarmActive) {
+                showStatus('请先激活报警按钮', 'error');
+                return false;
+            }
+            
             try {
                 showStatus('正在发送报警...', 'warning');
                 
@@ -1272,6 +2473,13 @@
                 const userIP = await getUserIP();
                 const alarmId = 'alarm-' + now.getTime() + '-' + Math.random().toString(36).substr(2, 9);
                 
+                // 判断是否为管理员报警
+                const isAdminAlarm = adminAlarmActive;
+                const notificationTitle = isAdminAlarm ? '👮 管理员紧急报警' : '🚨 紧急报警通知';
+                const notificationBody = isAdminAlarm 
+                    ? `管理员报警时间: ${alarmTime}\nIP地址: ${userIP}\n请立即查看！`
+                    : `报警时间: ${alarmTime}\nIP地址: ${userIP}\n请立即查看！`;
+                
                 const alarmData = {
                     action: 'alarm',
                     ip: userIP,
@@ -1279,8 +2487,9 @@
                     timestamp: now.getTime(),
                     deviceId: deviceId,
                     id: alarmId,
-                    notification_title: '🚨 紧急报警通知',
-                    notification_body: `报警时间: ${alarmTime}\nIP地址: ${userIP}\n请立即查看！`
+                    isAdmin: isAdminAlarm,
+                    notification_title: notificationTitle,
+                    notification_body: notificationBody
                 };
                 
                 const response = await fetch(WORKER_URL, {
@@ -1304,6 +2513,10 @@
                         message += ` 已推送 ${result.firebase_result.sent_count || 0} 台设备`;
                     }
                     
+                    if (isAdminAlarm) {
+                        message = '管理员报警已发送！';
+                    }
+                    
                     showStatus(message, 'success');
                     await fetchAlarms();
                     
@@ -1313,6 +2526,16 @@
                     }, 3000);
                     
                     vibrateAlarm();
+                    
+                    // 如果是普通报警，停用报警按钮
+                    if (!isAdminAlarm) {
+                        deactivateAlarmButton();
+                    }
+                    
+                    // 记录日志
+                    if (isAdminAlarm) {
+                        logAdminAction('发送管理员报警');
+                    }
                     
                     return true;
                 } else {
@@ -1414,14 +2637,15 @@
                 const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
                 const timeAgo = getTimeAgo(alarm.timestamp);
                 const isMyAlarm = alarm.deviceId === deviceId;
+                const isAdminAlarm = alarm.isAdmin;
                 
                 const alarmItem = document.createElement('div');
-                alarmItem.className = 'alarm-item';
+                alarmItem.className = `alarm-item ${isAdminAlarm ? 'admin-alarm' : ''}`;
                 
                 alarmItem.innerHTML = `
                     <div class="alarm-item-header">
-                        <div class="alarm-time">${alarmTime} ${isMyAlarm ? '<i class="fas fa-user" title="您的报警"></i>' : ''}</div>
-                        <div class="alarm-status">${timeAgo}</div>
+                        <div class="alarm-time">${alarmTime} ${isMyAlarm ? '<i class="fas fa-user" title="您的报警"></i>' : ''} ${isAdminAlarm ? '<i class="fas fa-user-shield" title="管理员报警"></i>' : ''}</div>
+                        <div class="alarm-status ${isAdminAlarm ? 'admin' : ''}">${timeAgo}</div>
                     </div>
                     <div class="alarm-details">
                         <div class="alarm-ip">IP: ${alarm.ip || '未知'}</div>
@@ -1464,12 +2688,13 @@
             const alarmCount = alarms.length;
             const latestAlarm = alarms[0];
             const timeAgo = getTimeAgo(latestAlarm.timestamp);
+            const isAdminAlarm = latestAlarm.isAdmin;
             
             notification.innerHTML = `
                 <div class="notification-header">
                     <div class="notification-title">
                         <i class="fas fa-bell"></i>
-                        <span>新报警通知</span>
+                        <span>${isAdminAlarm ? '管理员' : ''}新报警通知</span>
                     </div>
                     <button class="close-notification">&times;</button>
                 </div>
@@ -1502,8 +2727,10 @@
             currentRingingAlarm = alarm;
             
             const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
+            const isAdminAlarm = alarm.isAdmin;
+            
             ringingDetails.innerHTML = `
-                <p>时间: ${alarmTime}</p>
+                <p>${isAdminAlarm ? '管理员报警' : '报警'}时间: ${alarmTime}</p>
                 <p>IP: ${alarm.ip || '未知'}</p>
                 <p>设备ID: ${alarm.deviceId ? alarm.deviceId.substring(0, 12) + '...' : '未知'}</p>
             `;
@@ -1566,7 +2793,9 @@
             if (!("Notification" in window)) return;
             
             const alarmTime = new Date(alarm.timestamp).toLocaleString('zh-CN');
-            const notification = new Notification("紧急报警通知", {
+            const isAdminAlarm = alarm.isAdmin;
+            
+            const notification = new Notification(`${isAdminAlarm ? '管理员' : ''}紧急报警通知`, {
                 body: `收到新的紧急报警\n时间: ${alarmTime}\nIP: ${alarm.ip || '未知'}`,
                 icon: 'https://img.icons8.com/color/96/000000/siren.png',
                 tag: 'alarm-notification',
@@ -1759,6 +2988,18 @@
             if (ringInterval) {
                 clearInterval(ringInterval);
             }
+            if (alarmActiveTimeout) {
+                clearTimeout(alarmActiveTimeout);
+            }
+            if (alarmCountdownInterval) {
+                clearInterval(alarmCountdownInterval);
+            }
+            if (adminAlarmTimeout) {
+                clearTimeout(adminAlarmTimeout);
+            }
+            if (adminAlarmCountdownInterval) {
+                clearInterval(adminAlarmCountdownInterval);
+            }
         });
         
         // 添加轮询控制快捷键
@@ -1781,10 +3022,40 @@
             if (e.code === 'Escape' && isRinging) {
                 stopRinging();
             }
+            
+            // 数字键输入密码
+            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.key >= '0' && e.key <= '9') {
+                handlePasswordInput(e.key);
+                e.preventDefault();
+            }
+            
+            // Backspace删除
+            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Backspace') {
+                backspacePassword();
+                e.preventDefault();
+            }
+            
+            // Enter提交
+            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Enter') {
+                if (passwordModal.style.display === 'flex' && currentPassword.length === 6) {
+                    validateAlarmPassword();
+                } else if (adminLoginModal.style.display === 'flex' && currentPassword.length === 6) {
+                    validateAdminPassword();
+                }
+                e.preventDefault();
+            }
+            
+            // Escape取消
+            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Escape') {
+                hidePasswordModal();
+                e.preventDefault();
+            }
         });
         
         // 绑定主要按钮事件
         alarmBtn.addEventListener('click', sendAlarm);
+        activateBtn.addEventListener('click', () => showPasswordModal('alarm'));
+        adminBtn.addEventListener('click', () => showPasswordModal('admin'));
         homeBtn.addEventListener('click', () => {
             if (window.android && window.android.goToHome) {
                 window.android.goToHome();
@@ -1802,6 +3073,12 @@
         });
         
         // 绑定调试按钮事件
+        debugToggle.addEventListener('click', () => {
+            const isVisible = debugSection.style.display === 'block';
+            debugSection.style.display = isVisible ? 'none' : 'block';
+            debugToggle.querySelector('i:last-child').className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        });
+        
         askAppForTokenBtn.addEventListener('click', askAppForToken);
         showAppTokenBtn.addEventListener('click', showAppToken);
         copyTokenBtn.addEventListener('click', copyTokenToClipboard);
@@ -1809,6 +3086,69 @@
         clearTokenBtn.addEventListener('click', clearTokenData);
         manualGetTokenBtn.addEventListener('click', manualGetToken);
         debugTokenBtn.addEventListener('click', debugToken);
+        
+        // 绑定密码输入事件
+        document.querySelectorAll('.keypad-btn[data-key]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                handlePasswordInput(btn.dataset.key);
+            });
+        });
+        
+        clearPasswordBtn.addEventListener('click', clearPassword);
+        backspaceBtn.addEventListener('click', backspacePassword);
+        cancelPasswordBtn.addEventListener('click', hidePasswordModal);
+        submitPasswordBtn.addEventListener('click', validateAlarmPassword);
+        
+        clearAdminPasswordBtn.addEventListener('click', clearPassword);
+        adminBackspaceBtn.addEventListener('click', backspacePassword);
+        cancelAdminLoginBtn.addEventListener('click', hidePasswordModal);
+        submitAdminLoginBtn.addEventListener('click', validateAdminPassword);
+        
+        // 绑定管理页面事件
+        adminTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchAdminTab(tab.dataset.tab);
+            });
+        });
+        
+        refreshLogsBtn.addEventListener('click', loadAdminLogs);
+        clearLogsBtn.addEventListener('click', async () => {
+            if (confirm('确定要清空所有日志吗？此操作不可恢复。')) {
+                try {
+                    const response = await fetch(`${WORKER_URL}?action=clear_logs&secret=admin123`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showStatus('日志已清空', 'success');
+                        loadAdminLogs();
+                        logAdminAction('清空系统日志');
+                    } else {
+                        showStatus('清空日志失败: ' + (data.error || '未知错误'), 'error');
+                    }
+                } catch (error) {
+                    showStatus('清空日志失败: ' + error.message, 'error');
+                }
+            }
+        });
+        
+        updateAdminPasswordBtn.addEventListener('click', updateAdminPassword);
+        cancelAdminPasswordBtn.addEventListener('click', () => {
+            adminCurrentPassword.value = '';
+            adminNewPassword.value = '';
+            adminConfirmPassword.value = '';
+        });
+        
+        updateAlarmPasswordBtn.addEventListener('click', updateAlarmPassword);
+        cancelAlarmPasswordBtn.addEventListener('click', () => {
+            alarmCurrentPassword.value = '';
+            alarmNewPassword.value = '';
+            alarmConfirmPassword.value = '';
+        });
+        
+        activateAdminAlarmBtn.addEventListener('click', activateAdminAlarm);
+        cancelAdminAlarmBtn.addEventListener('click', () => {
+            adminAlarmPassword.value = '';
+        });
         
         // 全局接收Token的函数，供App调用
         window.receiveFCMToken = receiveFCMTokenFromApp;
