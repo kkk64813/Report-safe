@@ -1473,6 +1473,36 @@
             
             // 初始化报警按钮状态
             updateAlarmButtonState();
+			
+			  // 添加调试按钮（仅在开发时使用）
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const debugDiv = document.createElement('div');
+    debugDiv.style.position = 'fixed';
+    debugDiv.style.top = '10px';
+    debugDiv.style.left = '10px';
+    debugDiv.style.zIndex = '9999';
+    debugDiv.innerHTML = `
+      <button id="debugAdminAlarm" style="background: #9c27b0; color: white; padding: 10px; border: none; border-radius: 5px; margin: 5px;">
+        调试：激活管理员报警
+      </button>
+      <button id="debugDeactivateAdminAlarm" style="background: #f44336; color: white; padding: 10px; border: none; border-radius: 5px; margin: 5px;">
+        调试：停用管理员报警
+      </button>
+    `;
+    document.body.appendChild(debugDiv);
+    
+    document.getElementById('debugAdminAlarm').addEventListener('click', () => {
+      adminAlarmActive = true;
+      adminAlarmTimeLeft = 180;
+      updateAlarmButtonState();
+      showStatus('调试：管理员报警已激活', 'success');
+    });
+    
+    document.getElementById('debugDeactivateAdminAlarm').addEventListener('click', () => {
+      deactivateAdminAlarm();
+    });
+  }
+}
             
             // 加载日志
             loadAdminLogs();
@@ -1616,7 +1646,7 @@ async function validateAlarmPassword() {
 }
         
 
-// 验证管理员密码 - 修复版本
+// 验证管理员密码（用于管理员登录）
 async function validateAdminPassword() {
   try {
     // 从服务器获取密码哈希进行验证
@@ -1633,6 +1663,7 @@ async function validateAdminPassword() {
     });
     
     const data = await response.json();
+    console.log('管理员密码验证结果:', data);
     
     if (data.success) {
       // 密码正确，进入管理页面
@@ -1643,9 +1674,15 @@ async function validateAdminPassword() {
       
       // 记录管理员登录
       logAdminAction('管理员登录');
+      
+      // 自动切换到日志标签页
+      switchAdminTab('logs');
+      
+      return true;
     } else {
       // 密码错误
       showAdminPasswordError('管理员密码错误');
+      return false;
     }
   } catch (error) {
     console.error('管理员密码验证失败:', error);
@@ -1658,8 +1695,14 @@ async function validateAdminPassword() {
       
       // 记录管理员登录
       logAdminAction('管理员登录');
+      
+      // 自动切换到日志标签页
+      switchAdminTab('logs');
+      
+      return true;
     } else {
       showAdminPasswordError('管理员密码错误');
+      return false;
     }
   }
 }
@@ -1998,130 +2041,222 @@ async function validateAdminPassword() {
             }
         }
         
-        // 激活管理员报警
-        async function activateAdminAlarm() {
-            const password = adminAlarmPassword.value;
-            
-            if (!password) {
-                showStatus('请输入管理员密码', 'error');
-                return;
-            }
-            
-            try {
-                // 验证管理员密码
-                const response = await fetch(`${WORKER_URL}?action=validate_password&type=admin`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        password: password,
-                        deviceId: deviceId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // 激活管理员报警
-                    adminAlarmActive = true;
-                    adminAlarmTimeLeft = 180;
-                    adminAlarmPassword.value = '';
-                    
-                    // 显示激活状态
-                    adminAlarmStatus.style.display = 'block';
-                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
-                    
-                    // 更新主页面报警按钮
-                    updateAlarmButtonState();
-                    
-                    // 启动倒计时
-                    adminAlarmCountdownInterval = setInterval(() => {
-                        adminAlarmTimeLeft--;
-                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
-                        updateAlarmButtonState();
-                        
-                        if (adminAlarmTimeLeft <= 0) {
-                            deactivateAdminAlarm();
-                        }
-                    }, 1000);
-                    
-                    // 设置3分钟后自动失效
-                    adminAlarmTimeout = setTimeout(() => {
-                        deactivateAdminAlarm();
-                    }, 180000);
-                    
-                    showStatus('管理员报警已激活，3分钟内有效', 'success');
-                    
-                    // 记录操作
-                    logAdminAction('激活管理员报警');
-                } else {
-                    showStatus('管理员密码错误', 'error');
-                }
-            } catch (error) {
-                console.error('激活管理员报警失败:', error);
-                // 如果网络错误，使用本地默认密码（仅用于测试）
-                if (password === DEFAULT_ADMIN_PASSWORD) {
-                    adminAlarmActive = true;
-                    adminAlarmTimeLeft = 180;
-                    adminAlarmPassword.value = '';
-                    
-                    // 显示激活状态
-                    adminAlarmStatus.style.display = 'block';
-                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
-                    
-                    // 更新主页面报警按钮
-                    updateAlarmButtonState();
-                    
-                    // 启动倒计时
-                    adminAlarmCountdownInterval = setInterval(() => {
-                        adminAlarmTimeLeft--;
-                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
-                        updateAlarmButtonState();
-                        
-                        if (adminAlarmTimeLeft <= 0) {
-                            deactivateAdminAlarm();
-                        }
-                    }, 1000);
-                    
-                    // 设置3分钟后自动失效
-                    adminAlarmTimeout = setTimeout(() => {
-                        deactivateAdminAlarm();
-                    }, 180000);
-                    
-                    showStatus('管理员报警已激活，3分钟内有效', 'success');
-                    
-                    // 记录操作
-                    logAdminAction('激活管理员报警');
-                } else {
-                    showStatus('管理员密码错误', 'error');
-                }
-            }
-        }
+// 激活管理员报警 - 修复版本
+async function activateAdminAlarm() {
+  const password = adminAlarmPassword.value;
+  
+  console.log('尝试激活管理员报警，密码:', password);
+  
+  if (!password) {
+    showStatus('请输入管理员密码', 'error');
+    return;
+  }
+  
+  try {
+    // 验证管理员密码
+    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        password: password,
+        type: 'admin',
+        deviceId: deviceId
+      })
+    });
+    
+    const data = await response.json();
+    console.log('激活管理员报警验证结果:', data);
+    
+    if (data.success) {
+      // 激活管理员报警
+      adminAlarmActive = true;
+      adminAlarmTimeLeft = 180; // 3分钟
+      adminAlarmPassword.value = '';
+      
+      console.log('管理员报警已激活');
+      
+      // 显示激活状态
+      adminAlarmStatus.style.display = 'block';
+      adminAlarmTimer.textContent = adminAlarmTimeLeft;
+      
+      // 更新主页面报警按钮
+      updateAlarmButtonState();
+      
+      // 启动倒计时
+      if (adminAlarmCountdownInterval) {
+        clearInterval(adminAlarmCountdownInterval);
+      }
+      
+      adminAlarmCountdownInterval = setInterval(() => {
+        adminAlarmTimeLeft--;
+        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+        updateAlarmButtonState();
         
-        // 停用管理员报警
-        function deactivateAdminAlarm() {
-            adminAlarmActive = false;
-            
-            // 清除定时器
-            if (adminAlarmTimeout) {
-                clearTimeout(adminAlarmTimeout);
-                adminAlarmTimeout = null;
-            }
-            
-            if (adminAlarmCountdownInterval) {
-                clearInterval(adminAlarmCountdownInterval);
-                adminAlarmCountdownInterval = null;
-            }
-            
-            // 隐藏激活状态
-            adminAlarmStatus.style.display = 'none';
-            
-            // 更新主页面报警按钮
-            updateAlarmButtonState();
-            
-            showStatus('管理员报警权限已失效', 'warning');
+        if (adminAlarmTimeLeft <= 0) {
+          deactivateAdminAlarm();
         }
+      }, 1000);
+      
+      // 设置3分钟后自动失效
+      if (adminAlarmTimeout) {
+        clearTimeout(adminAlarmTimeout);
+      }
+      
+      adminAlarmTimeout = setTimeout(() => {
+        deactivateAdminAlarm();
+      }, 180000);
+      
+      showStatus('管理员报警已激活，3分钟内有效', 'success');
+      
+      // 记录操作
+      logAdminAction('激活管理员报警');
+      
+      // 3秒后自动切换回主页面
+      setTimeout(() => {
+        hideAdminSection();
+        adminSection.classList.remove('active');
+      }, 3000);
+      
+    } else {
+      showStatus('管理员密码错误', 'error');
+    }
+  } catch (error) {
+    console.error('激活管理员报警失败:', error);
+    // 如果网络错误，使用本地默认密码（仅用于测试）
+    if (password === DEFAULT_ADMIN_PASSWORD) {
+      // 激活管理员报警
+      adminAlarmActive = true;
+      adminAlarmTimeLeft = 180;
+      adminAlarmPassword.value = '';
+      
+      console.log('管理员报警已激活（使用本地验证）');
+      
+      // 显示激活状态
+      adminAlarmStatus.style.display = 'block';
+      adminAlarmTimer.textContent = adminAlarmTimeLeft;
+      
+      // 更新主页面报警按钮
+      updateAlarmButtonState();
+      
+      // 启动倒计时
+      if (adminAlarmCountdownInterval) {
+        clearInterval(adminAlarmCountdownInterval);
+      }
+      
+      adminAlarmCountdownInterval = setInterval(() => {
+        adminAlarmTimeLeft--;
+        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+        updateAlarmButtonState();
+        
+        if (adminAlarmTimeLeft <= 0) {
+          deactivateAdminAlarm();
+        }
+      }, 1000);
+      
+      // 设置3分钟后自动失效
+      if (adminAlarmTimeout) {
+        clearTimeout(adminAlarmTimeout);
+      }
+      
+      adminAlarmTimeout = setTimeout(() => {
+        deactivateAdminAlarm();
+      }, 180000);
+      
+      showStatus('管理员报警已激活，3分钟内有效', 'success');
+      
+      // 记录操作
+      logAdminAction('激活管理员报警（本地验证）');
+      
+      // 3秒后自动切换回主页面
+      setTimeout(() => {
+        hideAdminSection();
+        adminSection.classList.remove('active');
+      }, 3000);
+    } else {
+      showStatus('管理员密码错误', 'error');
+    }
+  }
+}
+
+// 停用管理员报警 - 修复版本
+function deactivateAdminAlarm() {
+  console.log('停用管理员报警');
+  
+  adminAlarmActive = false;
+  
+  // 清除定时器
+  if (adminAlarmTimeout) {
+    clearTimeout(adminAlarmTimeout);
+    adminAlarmTimeout = null;
+  }
+  
+  if (adminAlarmCountdownInterval) {
+    clearInterval(adminAlarmCountdownInterval);
+    adminAlarmCountdownInterval = null;
+  }
+  
+  // 隐藏激活状态
+  if (adminAlarmStatus) {
+    adminAlarmStatus.style.display = 'none';
+  }
+  
+  // 更新主页面报警按钮
+  updateAlarmButtonState();
+  
+  showStatus('管理员报警权限已失效', 'warning');
+}
+
+// 更新报警按钮状态 - 修复版本
+function updateAlarmButtonState() {
+  console.log('更新报警按钮状态:', {
+    adminAlarmActive: adminAlarmActive,
+    alarmActive: alarmActive,
+    adminAlarmTimeLeft: adminAlarmTimeLeft,
+    alarmActiveTimeLeft: alarmActiveTimeLeft
+  });
+  
+  if (adminAlarmActive) {
+    // 管理员报警激活状态
+    alarmBtn.classList.remove('disabled');
+    alarmBtn.classList.add('admin-active');
+    if (alarmBtn.classList.contains('pressed')) {
+      alarmBtn.classList.remove('pressed');
+    }
+    
+    alarmStatusElement.textContent = `管理员报警已激活 (${adminAlarmTimeLeft}秒)`;
+    alarmStatusElement.style.color = '#9c27b0';
+    
+    // 隐藏普通报警倒计时
+    alarmCountdown.style.display = 'none';
+    
+  } else if (alarmActive) {
+    // 普通报警激活状态
+    alarmBtn.classList.remove('disabled');
+    alarmBtn.classList.remove('admin-active');
+    alarmBtn.classList.add('pressed');
+    
+    alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
+    alarmStatusElement.style.color = '#4caf50';
+    
+    // 显示普通报警倒计时
+    alarmCountdown.style.display = 'block';
+    alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
+    
+  } else {
+    // 未激活状态
+    alarmBtn.classList.add('disabled');
+    alarmBtn.classList.remove('admin-active');
+    alarmBtn.classList.remove('pressed');
+    
+    alarmStatusElement.textContent = '需要激活';
+    alarmStatusElement.style.color = '#ff5252';
+    
+    // 隐藏倒计时
+    alarmCountdown.style.display = 'none';
+  }
+}
         
         // ==================== Token管理函数 ====================
         
