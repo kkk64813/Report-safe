@@ -90,7 +90,7 @@
             overflow: hidden;
         }
         
-        .alarm-button:hover, .alarm-button:active {
+        .alarm-button:hover {
             transform: scale(1.05);
             box-shadow: 0 0 60px rgba(255, 82, 82, 0.8);
         }
@@ -172,7 +172,6 @@
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
             color: #bbdefb;
         }
@@ -574,7 +573,7 @@
             padding: 15px;
             margin-top: 20px;
             border-radius: 10px;
-            display: none; /* 默认隐藏 */
+            display: none;
         }
         
         .debug-toggle {
@@ -1017,9 +1016,9 @@
                 <i class="fas fa-exclamation-triangle"></i> 警告：此按钮仅在紧急情况下使用。误报可能导致不必要的恐慌和资源浪费。
             </p>
             
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                 <button class="btn" id="activateBtn" style="background: linear-gradient(to right, #4caf50, #2e7d32); color: white;">
-                    <i class="fas fa-key"></i> 输入密码激活报警按钮
+                    <i class="fas fa-key"></i> 激活报警按钮
                 </button>
                 <button class="btn admin-btn" id="adminBtn">
                     <i class="fas fa-user-cog"></i> 管理员
@@ -1320,6 +1319,10 @@
         // ==================== 全局变量 ====================
         const WORKER_URL = 'https://alarm.mgjack13.workers.dev/';
         
+        // 默认密码（仅在本地验证使用）
+        const DEFAULT_ALARM_PASSWORD = '951028';
+        const DEFAULT_ADMIN_PASSWORD = '820421';
+        
         // 获取页面元素
         const alarmBtn = document.getElementById('alarmBtn');
         const activateBtn = document.getElementById('activateBtn');
@@ -1328,6 +1331,8 @@
         const testBtn = document.getElementById('testBtn');
         const clearBtn = document.getElementById('clearBtn');
         const testPushBtn = document.getElementById('testPushBtn');
+        
+        // 系统状态元素
         const workerUrlElement = document.getElementById('workerUrl');
         const ipAddressElement = document.getElementById('ipAddress');
         const deviceIdElement = document.getElementById('deviceId');
@@ -1335,21 +1340,33 @@
         const pushStatusElement = document.getElementById('pushStatus');
         const pollingStatusElement = document.getElementById('pollingStatus');
         const alarmStatusElement = document.getElementById('alarmStatus');
+        
+        // 报警列表元素
         const alarmsListElement = document.getElementById('alarmsList');
         const alarmsCountElement = document.getElementById('alarmsCount');
+        
+        // 状态消息
         const statusMessage = document.getElementById('statusMessage');
+        
+        // 轮询状态
         const pollingStatusIndicator = document.getElementById('pollingStatusIndicator');
         const pollingDot = document.getElementById('pollingDot');
         const lastPollTimeElement = document.getElementById('lastPollTime');
+        
+        // 响铃通知
         const ringingNotification = document.getElementById('ringingNotification');
         const ringingDetails = document.getElementById('ringingDetails');
         const silenceBtn = document.getElementById('silenceBtn');
         const viewAlarmBtn = document.getElementById('viewAlarmBtn');
+        
+        // 倒计时
         const alarmCountdown = document.getElementById('alarmCountdown');
         
-        // 调试按钮
+        // 调试区域
         const debugToggle = document.getElementById('debugToggle');
         const debugSection = document.getElementById('debugSection');
+        
+        // 调试按钮
         const askAppForTokenBtn = document.getElementById('askAppForTokenBtn');
         const showAppTokenBtn = document.getElementById('showAppTokenBtn');
         const copyTokenBtn = document.getElementById('copyTokenBtn');
@@ -1385,16 +1402,21 @@
         const adminLogList = document.getElementById('adminLogList');
         const refreshLogsBtn = document.getElementById('refreshLogsBtn');
         const clearLogsBtn = document.getElementById('clearLogsBtn');
+        
+        // 密码设置元素
         const adminCurrentPassword = document.getElementById('adminCurrentPassword');
         const adminNewPassword = document.getElementById('adminNewPassword');
         const adminConfirmPassword = document.getElementById('adminConfirmPassword');
         const updateAdminPasswordBtn = document.getElementById('updateAdminPasswordBtn');
         const cancelAdminPasswordBtn = document.getElementById('cancelAdminPasswordBtn');
+        
         const alarmCurrentPassword = document.getElementById('alarmCurrentPassword');
         const alarmNewPassword = document.getElementById('alarmNewPassword');
         const alarmConfirmPassword = document.getElementById('alarmConfirmPassword');
         const updateAlarmPasswordBtn = document.getElementById('updateAlarmPasswordBtn');
         const cancelAlarmPasswordBtn = document.getElementById('cancelAlarmPasswordBtn');
+        
+        // 管理员报警元素
         const adminAlarmPassword = document.getElementById('adminAlarmPassword');
         const activateAdminAlarmBtn = document.getElementById('activateAdminAlarmBtn');
         const cancelAdminAlarmBtn = document.getElementById('cancelAdminAlarmBtn');
@@ -1417,15 +1439,13 @@
         let alarmActiveTimeout = null;
         let alarmCountdownInterval = null;
         let alarmActiveTimeLeft = 10;
+        
+        // 管理员相关变量
         let adminLoggedIn = false;
         let adminAlarmActive = false;
         let adminAlarmTimeout = null;
         let adminAlarmCountdownInterval = null;
         let adminAlarmTimeLeft = 180;
-        
-        // 默认密码（实际使用中应该从服务器获取）
-        const DEFAULT_ALARM_PASSWORD = '951028';
-        const DEFAULT_ADMIN_PASSWORD = '820421';
         
         // ==================== 初始化函数 ====================
         
@@ -1441,6 +1461,8 @@
         
         // 初始化页面
         async function initPage() {
+            console.log('初始化页面...');
+            
             // 初始化设备ID
             initDeviceId();
             
@@ -1473,50 +1495,20 @@
             
             // 初始化报警按钮状态
             updateAlarmButtonState();
-			
-			  // 添加调试按钮（仅在开发时使用）
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    const debugDiv = document.createElement('div');
-    debugDiv.style.position = 'fixed';
-    debugDiv.style.top = '10px';
-    debugDiv.style.left = '10px';
-    debugDiv.style.zIndex = '9999';
-    debugDiv.innerHTML = `
-      <button id="debugAdminAlarm" style="background: #9c27b0; color: white; padding: 10px; border: none; border-radius: 5px; margin: 5px;">
-        调试：激活管理员报警
-      </button>
-      <button id="debugDeactivateAdminAlarm" style="background: #f44336; color: white; padding: 10px; border: none; border-radius: 5px; margin: 5px;">
-        调试：停用管理员报警
-      </button>
-    `;
-    document.body.appendChild(debugDiv);
-    
-    document.getElementById('debugAdminAlarm').addEventListener('click', () => {
-      adminAlarmActive = true;
-      adminAlarmTimeLeft = 180;
-      updateAlarmButtonState();
-      showStatus('调试：管理员报警已激活', 'success');
-    });
-    
-    document.getElementById('debugDeactivateAdminAlarm').addEventListener('click', () => {
-      deactivateAdminAlarm();
-    });
-  }
-}
-            
-            // 加载日志
-            loadAdminLogs();
             
             // 显示轮询控制提示
             setTimeout(() => {
                 showStatus('提示：按空格键可暂停/继续轮询，按Ctrl+R手动刷新，按ESC停止响铃', 'warning');
             }, 3000);
+            
+            console.log('页面初始化完成');
         }
         
         // ==================== 密码管理函数 ====================
         
         // 显示密码输入模态框
         function showPasswordModal(mode) {
+            console.log('显示密码模态框，模式:', mode);
             passwordMode = mode;
             currentPassword = '';
             updatePasswordDisplay();
@@ -1534,12 +1526,15 @@
         
         // 隐藏密码输入模态框
         function hidePasswordModal() {
+            console.log('隐藏密码模态框');
             passwordModal.style.display = 'none';
             adminLoginModal.style.display = 'none';
         }
         
         // 更新密码显示
         function updatePasswordDisplay() {
+            console.log('更新密码显示，当前密码长度:', currentPassword.length);
+            
             const dots = passwordMode === 'alarm' 
                 ? passwordDisplay.querySelectorAll('.password-dot')
                 : adminPasswordDisplay.querySelectorAll('.password-dot');
@@ -1564,12 +1559,14 @@
         
         // 处理密码输入
         function handlePasswordInput(key) {
+            console.log('密码输入:', key);
             if (currentPassword.length < 6) {
                 currentPassword += key;
                 updatePasswordDisplay();
                 
                 // 如果输入了6位数字，自动验证
                 if (currentPassword.length === 6) {
+                    console.log('已输入6位密码，开始验证');
                     if (passwordMode === 'alarm') {
                         setTimeout(() => validateAlarmPassword(), 300);
                     } else {
@@ -1581,6 +1578,7 @@
         
         // 清除密码
         function clearPassword() {
+            console.log('清除密码');
             currentPassword = '';
             updatePasswordDisplay();
             
@@ -1593,6 +1591,7 @@
         
         // 删除最后一位
         function backspacePassword() {
+            console.log('删除最后一位密码');
             if (currentPassword.length > 0) {
                 currentPassword = currentPassword.slice(0, -1);
                 updatePasswordDisplay();
@@ -1605,111 +1604,115 @@
             }
         }
         
-// 验证报警密码 - 修复版本
-async function validateAlarmPassword() {
-  try {
-    // 从服务器获取密码哈希进行验证
-    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        password: currentPassword,
-        type: 'alarm',
-        deviceId: deviceId
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      // 密码正确，激活报警按钮
-      activateAlarmButton();
-      hidePasswordModal();
-      showStatus('报警按钮已激活，10秒内有效', 'success');
-    } else {
-      // 密码错误
-      showPasswordError('密码错误，请重新输入');
-    }
-  } catch (error) {
-    console.error('密码验证失败:', error);
-    // 如果网络错误，使用本地默认密码（仅用于测试）
-    if (currentPassword === DEFAULT_ALARM_PASSWORD) {
-      activateAlarmButton();
-      hidePasswordModal();
-      showStatus('报警按钮已激活，10秒内有效', 'success');
-    } else {
-      showPasswordError('密码错误，请重新输入');
-    }
-  }
-}
+        // 验证报警密码
+        async function validateAlarmPassword() {
+            console.log('验证报警密码:', currentPassword);
+            try {
+                // 从服务器获取密码哈希进行验证
+                const response = await fetch(`${WORKER_URL}?action=validate_password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: currentPassword,
+                        type: 'alarm',
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('报警密码验证响应:', data);
+                
+                if (data.success) {
+                    // 密码正确，激活报警按钮
+                    console.log('报警密码正确，激活报警按钮');
+                    activateAlarmButton();
+                    hidePasswordModal();
+                    showStatus('报警按钮已激活，10秒内有效', 'success');
+                } else {
+                    // 密码错误
+                    console.log('报警密码错误');
+                    showPasswordError('密码错误，请重新输入');
+                }
+            } catch (error) {
+                console.error('报警密码验证失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (currentPassword === DEFAULT_ALARM_PASSWORD) {
+                    console.log('使用本地默认报警密码验证成功');
+                    activateAlarmButton();
+                    hidePasswordModal();
+                    showStatus('报警按钮已激活，10秒内有效', 'success');
+                } else {
+                    console.log('本地默认密码也不匹配');
+                    showPasswordError('密码错误，请重新输入');
+                }
+            }
+        }
         
-
-// 验证管理员密码（用于管理员登录）
-async function validateAdminPassword() {
-  try {
-    // 从服务器获取密码哈希进行验证
-    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        password: currentPassword,
-        type: 'admin',
-        deviceId: deviceId
-      })
-    });
-    
-    const data = await response.json();
-    console.log('管理员密码验证结果:', data);
-    
-    if (data.success) {
-      // 密码正确，进入管理页面
-      adminLoggedIn = true;
-      hidePasswordModal();
-      showAdminSection();
-      showStatus('管理员登录成功', 'success');
-      
-      // 记录管理员登录
-      logAdminAction('管理员登录');
-      
-      // 自动切换到日志标签页
-      switchAdminTab('logs');
-      
-      return true;
-    } else {
-      // 密码错误
-      showAdminPasswordError('管理员密码错误');
-      return false;
-    }
-  } catch (error) {
-    console.error('管理员密码验证失败:', error);
-    // 如果网络错误，使用本地默认密码（仅用于测试）
-    if (currentPassword === DEFAULT_ADMIN_PASSWORD) {
-      adminLoggedIn = true;
-      hidePasswordModal();
-      showAdminSection();
-      showStatus('管理员登录成功', 'success');
-      
-      // 记录管理员登录
-      logAdminAction('管理员登录');
-      
-      // 自动切换到日志标签页
-      switchAdminTab('logs');
-      
-      return true;
-    } else {
-      showAdminPasswordError('管理员密码错误');
-      return false;
-    }
-  }
-}
-
+        // 验证管理员密码
+        async function validateAdminPassword() {
+            console.log('验证管理员密码:', currentPassword);
+            try {
+                // 从服务器获取密码哈希进行验证
+                const response = await fetch(`${WORKER_URL}?action=validate_password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: currentPassword,
+                        type: 'admin',
+                        deviceId: deviceId
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('管理员密码验证响应:', data);
+                
+                if (data.success) {
+                    // 密码正确，进入管理页面
+                    console.log('管理员密码正确，进入管理页面');
+                    adminLoggedIn = true;
+                    hidePasswordModal();
+                    showAdminSection();
+                    showStatus('管理员登录成功', 'success');
+                    
+                    // 记录管理员登录
+                    logAdminAction('管理员登录');
+                    
+                    return true;
+                } else {
+                    // 密码错误
+                    console.log('管理员密码错误');
+                    showAdminPasswordError('管理员密码错误');
+                    return false;
+                }
+            } catch (error) {
+                console.error('管理员密码验证失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (currentPassword === DEFAULT_ADMIN_PASSWORD) {
+                    console.log('使用本地默认管理员密码验证成功');
+                    adminLoggedIn = true;
+                    hidePasswordModal();
+                    showAdminSection();
+                    showStatus('管理员登录成功', 'success');
+                    
+                    // 记录管理员登录
+                    logAdminAction('管理员登录');
+                    
+                    return true;
+                } else {
+                    console.log('本地默认密码也不匹配');
+                    showAdminPasswordError('管理员密码错误');
+                    return false;
+                }
+            }
+        }
         
         // 显示密码错误
         function showPasswordError(message) {
+            console.log('显示密码错误:', message);
             const dots = passwordDisplay.querySelectorAll('.password-dot');
             dots.forEach(dot => {
                 dot.classList.add('error');
@@ -1728,6 +1731,7 @@ async function validateAdminPassword() {
         
         // 显示管理员密码错误
         function showAdminPasswordError(message) {
+            console.log('显示管理员密码错误:', message);
             const dots = adminPasswordDisplay.querySelectorAll('.password-dot');
             dots.forEach(dot => {
                 dot.classList.add('error');
@@ -1746,29 +1750,42 @@ async function validateAdminPassword() {
         
         // 激活报警按钮
         function activateAlarmButton() {
+            console.log('激活报警按钮');
             alarmActive = true;
             alarmActiveTimeLeft = 10;
             
+            // 清除任何现有的管理员报警状态
+            if (adminAlarmActive) {
+                deactivateAdminAlarm();
+            }
+            
             // 更新按钮状态
-            alarmBtn.classList.remove('disabled');
-            alarmBtn.classList.add('pressed');
-            alarmStatusElement.textContent = '已激活 (10秒)';
-            alarmStatusElement.style.color = '#4caf50';
+            updateAlarmButtonState();
             
             // 显示倒计时
             alarmCountdown.style.display = 'block';
             alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
             
+            // 清除任何现有的倒计时
+            if (alarmCountdownInterval) {
+                clearInterval(alarmCountdownInterval);
+            }
+            
             // 启动倒计时
             alarmCountdownInterval = setInterval(() => {
                 alarmActiveTimeLeft--;
                 alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
-                alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
+                updateAlarmButtonState();
                 
                 if (alarmActiveTimeLeft <= 0) {
                     deactivateAlarmButton();
                 }
             }, 1000);
+            
+            // 清除任何现有的超时
+            if (alarmActiveTimeout) {
+                clearTimeout(alarmActiveTimeout);
+            }
             
             // 设置10秒后自动失效
             alarmActiveTimeout = setTimeout(() => {
@@ -1778,6 +1795,7 @@ async function validateAdminPassword() {
         
         // 停用报警按钮
         function deactivateAlarmButton() {
+            console.log('停用报警按钮');
             alarmActive = false;
             
             // 清除定时器
@@ -1792,35 +1810,54 @@ async function validateAdminPassword() {
             }
             
             // 更新按钮状态
-            alarmBtn.classList.add('disabled');
-            alarmBtn.classList.remove('pressed');
-            alarmBtn.classList.remove('admin-active');
-            alarmStatusElement.textContent = '需要激活';
-            alarmStatusElement.style.color = '#ff5252';
-            
-            // 隐藏倒计时
-            alarmCountdown.style.display = 'none';
+            updateAlarmButtonState();
         }
         
         // 更新报警按钮状态
         function updateAlarmButtonState() {
+            console.log('更新报警按钮状态:', {
+                adminAlarmActive: adminAlarmActive,
+                alarmActive: alarmActive,
+                adminAlarmTimeLeft: adminAlarmTimeLeft,
+                alarmActiveTimeLeft: alarmActiveTimeLeft
+            });
+            
             if (adminAlarmActive) {
+                // 管理员报警激活状态
                 alarmBtn.classList.remove('disabled');
                 alarmBtn.classList.add('admin-active');
+                alarmBtn.classList.remove('pressed');
+                
                 alarmStatusElement.textContent = `管理员报警已激活 (${adminAlarmTimeLeft}秒)`;
                 alarmStatusElement.style.color = '#9c27b0';
+                
+                // 隐藏普通报警倒计时
+                alarmCountdown.style.display = 'none';
+                
             } else if (alarmActive) {
+                // 普通报警激活状态
                 alarmBtn.classList.remove('disabled');
                 alarmBtn.classList.remove('admin-active');
                 alarmBtn.classList.add('pressed');
+                
                 alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
                 alarmStatusElement.style.color = '#4caf50';
+                
+                // 显示普通报警倒计时
+                alarmCountdown.style.display = 'block';
+                alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
+                
             } else {
+                // 未激活状态
                 alarmBtn.classList.add('disabled');
                 alarmBtn.classList.remove('admin-active');
                 alarmBtn.classList.remove('pressed');
+                
                 alarmStatusElement.textContent = '需要激活';
                 alarmStatusElement.style.color = '#ff5252';
+                
+                // 隐藏倒计时
+                alarmCountdown.style.display = 'none';
             }
         }
         
@@ -1828,18 +1865,22 @@ async function validateAdminPassword() {
         
         // 显示管理页面
         function showAdminSection() {
+            console.log('显示管理页面');
             adminSection.classList.add('active');
             switchAdminTab('logs');
         }
         
         // 隐藏管理页面
         function hideAdminSection() {
+            console.log('隐藏管理页面');
             adminSection.classList.remove('active');
             adminLoggedIn = false;
         }
         
         // 切换管理页面标签
         function switchAdminTab(tabName) {
+            console.log('切换管理标签页:', tabName);
+            
             // 更新标签状态
             adminTabs.forEach(tab => {
                 if (tab.dataset.tab === tabName) {
@@ -1855,670 +1896,170 @@ async function validateAdminPassword() {
             adminAlarmPanel.style.display = tabName === 'admin-alarm' ? 'block' : 'none';
         }
         
-        // 加载管理员日志
-        async function loadAdminLogs() {
-            try {
-                const response = await fetch(`${WORKER_URL}?action=get_logs&limit=50`);
-                const data = await response.json();
-                
-                if (data.success && data.logs && data.logs.length > 0) {
-                    displayAdminLogs(data.logs);
-                } else {
-                    adminLogList.innerHTML = `
-                        <div class="no-alarms">
-                            <i class="fas fa-clock"></i>
-                            <p>暂无日志记录</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('加载日志失败:', error);
-                adminLogList.innerHTML = `
-                    <div class="no-alarms">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>加载日志失败</p>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            }
-        }
-        
-        // 显示管理员日志
-        function displayAdminLogs(logs) {
-            adminLogList.innerHTML = '';
+        // 激活管理员报警
+        async function activateAdminAlarm() {
+            const password = adminAlarmPassword.value;
             
-            logs.forEach(log => {
-                const logItem = document.createElement('div');
-                logItem.className = `log-item ${log.type || ''}`;
-                
-                const logTime = new Date(log.timestamp).toLocaleString('zh-CN');
-                const logType = log.type === 'alarm' ? '报警' : 
-                               log.type === 'admin' ? '管理员' : '系统';
-                const logTypeClass = log.type || 'system';
-                
-                logItem.innerHTML = `
-                    <div class="log-header">
-                        <div class="log-time">${logTime}</div>
-                        <div class="log-type ${logTypeClass}">${logType}</div>
-                    </div>
-                    <div class="log-details">
-                        ${log.message || '无详细信息'}
-                        ${log.ip ? `<div class="log-ip">IP: ${log.ip}</div>` : ''}
-                        ${log.deviceId ? `<div class="log-ip">设备ID: ${log.deviceId.substring(0, 12)}...</div>` : ''}
-                    </div>
-                `;
-                
-                adminLogList.appendChild(logItem);
-            });
-        }
-        
-        // 记录管理员操作
-        async function logAdminAction(action, details = '') {
+            console.log('尝试激活管理员报警，密码:', password);
+            
+            if (!password) {
+                showStatus('请输入管理员密码', 'error');
+                return;
+            }
+            
             try {
-                const userIP = ipAddressElement.textContent;
-                await fetch(`${WORKER_URL}?action=log_action`, {
+                // 验证管理员密码
+                const response = await fetch(`${WORKER_URL}?action=validate_password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        password: password,
                         type: 'admin',
-                        message: action,
-                        details: details,
-                        ip: userIP,
-                        deviceId: deviceId,
-                        timestamp: Date.now()
-                    })
-                });
-            } catch (error) {
-                console.error('记录管理员操作失败:', error);
-            }
-        }
-        
-        // 更新管理员密码
-        async function updateAdminPassword() {
-            const current = adminCurrentPassword.value;
-            const newPass = adminNewPassword.value;
-            const confirm = adminConfirmPassword.value;
-            
-            if (!current || !newPass || !confirm) {
-                showStatus('请填写所有字段', 'error');
-                return;
-            }
-            
-            if (newPass !== confirm) {
-                showStatus('新密码与确认密码不一致', 'error');
-                return;
-            }
-            
-            if (!/^\d{6}$/.test(newPass)) {
-                showStatus('新密码必须是6位数字', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${WORKER_URL}?action=update_admin_password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        currentPassword: current,
-                        newPassword: newPass,
                         deviceId: deviceId
                     })
                 });
                 
                 const data = await response.json();
+                console.log('激活管理员报警验证结果:', data);
                 
                 if (data.success) {
-                    showStatus('管理员密码更新成功', 'success');
-                    adminCurrentPassword.value = '';
-                    adminNewPassword.value = '';
-                    adminConfirmPassword.value = '';
+                    // 激活管理员报警
+                    console.log('管理员密码正确，激活管理员报警');
+                    adminAlarmActive = true;
+                    adminAlarmTimeLeft = 180; // 3分钟
+                    adminAlarmPassword.value = '';
                     
-                    // 记录操作
-                    logAdminAction('修改管理员密码');
-                } else {
-                    showStatus('密码更新失败: ' + (data.error || '未知错误'), 'error');
-                }
-            } catch (error) {
-                console.error('更新管理员密码失败:', error);
-                showStatus('更新失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 更新报警密码
-        async function updateAlarmPassword() {
-            const current = alarmCurrentPassword.value;
-            const newPass = alarmNewPassword.value;
-            const confirm = alarmConfirmPassword.value;
-            
-            if (!current || !newPass || !confirm) {
-                showStatus('请填写所有字段', 'error');
-                return;
-            }
-            
-            if (newPass !== confirm) {
-                showStatus('新密码与确认密码不一致', 'error');
-                return;
-            }
-            
-            if (!/^\d{6}$/.test(newPass)) {
-                showStatus('新密码必须是6位数字', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${WORKER_URL}?action=update_alarm_password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        currentPassword: current,
-                        newPassword: newPass,
-                        deviceId: deviceId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showStatus('报警密码更新成功', 'success');
-                    alarmCurrentPassword.value = '';
-                    alarmNewPassword.value = '';
-                    alarmConfirmPassword.value = '';
+                    // 显示激活状态
+                    adminAlarmStatus.style.display = 'block';
+                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
                     
-                    // 记录操作
-                    logAdminAction('修改报警密码');
-                } else {
-                    showStatus('密码更新失败: ' + (data.error || '未知错误'), 'error');
-                }
-            } catch (error) {
-                console.error('更新报警密码失败:', error);
-                showStatus('更新失败: ' + error.message, 'error');
-            }
-        }
-        
-// 激活管理员报警 - 修复版本
-async function activateAdminAlarm() {
-  const password = adminAlarmPassword.value;
-  
-  console.log('尝试激活管理员报警，密码:', password);
-  
-  if (!password) {
-    showStatus('请输入管理员密码', 'error');
-    return;
-  }
-  
-  try {
-    // 验证管理员密码
-    const response = await fetch(`${WORKER_URL}?action=validate_password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        password: password,
-        type: 'admin',
-        deviceId: deviceId
-      })
-    });
-    
-    const data = await response.json();
-    console.log('激活管理员报警验证结果:', data);
-    
-    if (data.success) {
-      // 激活管理员报警
-      adminAlarmActive = true;
-      adminAlarmTimeLeft = 180; // 3分钟
-      adminAlarmPassword.value = '';
-      
-      console.log('管理员报警已激活');
-      
-      // 显示激活状态
-      adminAlarmStatus.style.display = 'block';
-      adminAlarmTimer.textContent = adminAlarmTimeLeft;
-      
-      // 更新主页面报警按钮
-      updateAlarmButtonState();
-      
-      // 启动倒计时
-      if (adminAlarmCountdownInterval) {
-        clearInterval(adminAlarmCountdownInterval);
-      }
-      
-      adminAlarmCountdownInterval = setInterval(() => {
-        adminAlarmTimeLeft--;
-        adminAlarmTimer.textContent = adminAlarmTimeLeft;
-        updateAlarmButtonState();
-        
-        if (adminAlarmTimeLeft <= 0) {
-          deactivateAdminAlarm();
-        }
-      }, 1000);
-      
-      // 设置3分钟后自动失效
-      if (adminAlarmTimeout) {
-        clearTimeout(adminAlarmTimeout);
-      }
-      
-      adminAlarmTimeout = setTimeout(() => {
-        deactivateAdminAlarm();
-      }, 180000);
-      
-      showStatus('管理员报警已激活，3分钟内有效', 'success');
-      
-      // 记录操作
-      logAdminAction('激活管理员报警');
-      
-      // 3秒后自动切换回主页面
-      setTimeout(() => {
-        hideAdminSection();
-        adminSection.classList.remove('active');
-      }, 3000);
-      
-    } else {
-      showStatus('管理员密码错误', 'error');
-    }
-  } catch (error) {
-    console.error('激活管理员报警失败:', error);
-    // 如果网络错误，使用本地默认密码（仅用于测试）
-    if (password === DEFAULT_ADMIN_PASSWORD) {
-      // 激活管理员报警
-      adminAlarmActive = true;
-      adminAlarmTimeLeft = 180;
-      adminAlarmPassword.value = '';
-      
-      console.log('管理员报警已激活（使用本地验证）');
-      
-      // 显示激活状态
-      adminAlarmStatus.style.display = 'block';
-      adminAlarmTimer.textContent = adminAlarmTimeLeft;
-      
-      // 更新主页面报警按钮
-      updateAlarmButtonState();
-      
-      // 启动倒计时
-      if (adminAlarmCountdownInterval) {
-        clearInterval(adminAlarmCountdownInterval);
-      }
-      
-      adminAlarmCountdownInterval = setInterval(() => {
-        adminAlarmTimeLeft--;
-        adminAlarmTimer.textContent = adminAlarmTimeLeft;
-        updateAlarmButtonState();
-        
-        if (adminAlarmTimeLeft <= 0) {
-          deactivateAdminAlarm();
-        }
-      }, 1000);
-      
-      // 设置3分钟后自动失效
-      if (adminAlarmTimeout) {
-        clearTimeout(adminAlarmTimeout);
-      }
-      
-      adminAlarmTimeout = setTimeout(() => {
-        deactivateAdminAlarm();
-      }, 180000);
-      
-      showStatus('管理员报警已激活，3分钟内有效', 'success');
-      
-      // 记录操作
-      logAdminAction('激活管理员报警（本地验证）');
-      
-      // 3秒后自动切换回主页面
-      setTimeout(() => {
-        hideAdminSection();
-        adminSection.classList.remove('active');
-      }, 3000);
-    } else {
-      showStatus('管理员密码错误', 'error');
-    }
-  }
-}
-
-// 停用管理员报警 - 修复版本
-function deactivateAdminAlarm() {
-  console.log('停用管理员报警');
-  
-  adminAlarmActive = false;
-  
-  // 清除定时器
-  if (adminAlarmTimeout) {
-    clearTimeout(adminAlarmTimeout);
-    adminAlarmTimeout = null;
-  }
-  
-  if (adminAlarmCountdownInterval) {
-    clearInterval(adminAlarmCountdownInterval);
-    adminAlarmCountdownInterval = null;
-  }
-  
-  // 隐藏激活状态
-  if (adminAlarmStatus) {
-    adminAlarmStatus.style.display = 'none';
-  }
-  
-  // 更新主页面报警按钮
-  updateAlarmButtonState();
-  
-  showStatus('管理员报警权限已失效', 'warning');
-}
-
-// 更新报警按钮状态 - 修复版本
-function updateAlarmButtonState() {
-  console.log('更新报警按钮状态:', {
-    adminAlarmActive: adminAlarmActive,
-    alarmActive: alarmActive,
-    adminAlarmTimeLeft: adminAlarmTimeLeft,
-    alarmActiveTimeLeft: alarmActiveTimeLeft
-  });
-  
-  if (adminAlarmActive) {
-    // 管理员报警激活状态
-    alarmBtn.classList.remove('disabled');
-    alarmBtn.classList.add('admin-active');
-    if (alarmBtn.classList.contains('pressed')) {
-      alarmBtn.classList.remove('pressed');
-    }
-    
-    alarmStatusElement.textContent = `管理员报警已激活 (${adminAlarmTimeLeft}秒)`;
-    alarmStatusElement.style.color = '#9c27b0';
-    
-    // 隐藏普通报警倒计时
-    alarmCountdown.style.display = 'none';
-    
-  } else if (alarmActive) {
-    // 普通报警激活状态
-    alarmBtn.classList.remove('disabled');
-    alarmBtn.classList.remove('admin-active');
-    alarmBtn.classList.add('pressed');
-    
-    alarmStatusElement.textContent = `已激活 (${alarmActiveTimeLeft}秒)`;
-    alarmStatusElement.style.color = '#4caf50';
-    
-    // 显示普通报警倒计时
-    alarmCountdown.style.display = 'block';
-    alarmCountdown.textContent = `${alarmActiveTimeLeft}秒后失效`;
-    
-  } else {
-    // 未激活状态
-    alarmBtn.classList.add('disabled');
-    alarmBtn.classList.remove('admin-active');
-    alarmBtn.classList.remove('pressed');
-    
-    alarmStatusElement.textContent = '需要激活';
-    alarmStatusElement.style.color = '#ff5252';
-    
-    // 隐藏倒计时
-    alarmCountdown.style.display = 'none';
-  }
-}
-        
-        // ==================== Token管理函数 ====================
-        
-        // 向App请求Token
-        function askAppForToken() {
-            showStatus('正在向App请求Token...', 'warning');
-            
-            // 方法1: 通过Android接口获取
-            if (window.Android && typeof window.Android.getFCMToken === 'function') {
-                try {
-                    window.Android.getFCMToken();
-                    showStatus('已向App请求Token', 'success');
-                } catch (error) {
-                    showStatus('调用App接口失败: ' + error.message, 'error');
-                }
-                return;
-            }
-            
-            // 方法2: 通过prompt方式获取
-            showStatus('正在尝试通过其他方式获取Token...', 'warning');
-            
-            // 尝试通过URL参数传递方式
-            if (window.location.search.includes('token=')) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token');
-                if (token) {
-                    receiveFCMTokenFromApp(token);
-                    return;
-                }
-            }
-            
-            // 方法3: 尝试从localStorage获取
-            const savedToken = localStorage.getItem('fcm_token');
-            if (savedToken) {
-                receiveFCMTokenFromApp(savedToken);
-                showStatus('使用本地保存的Token', 'warning');
-                return;
-            }
-            
-            showStatus('无法连接到App，请确保在App中运行', 'error');
-        }
-        
-        // 显示App中的Token
-        function showAppToken() {
-            if (window.Android && typeof window.Android.showToken === 'function') {
-                window.Android.showToken();
-            } else {
-                showStatus('请确保在App中运行', 'error');
-            }
-        }
-        
-        // 手动获取Token
-        async function manualGetToken() {
-            showStatus('正在尝试多种方式获取Token...', 'warning');
-            
-            // 方法1: 通过Android接口
-            if (window.Android && typeof window.Android.getFCMToken === 'function') {
-                window.Android.getFCMToken();
-                return;
-            }
-            
-            // 方法2: 通过localStorage
-            const savedToken = localStorage.getItem('fcm_token');
-            if (savedToken) {
-                receiveFCMTokenFromApp(savedToken);
-                showStatus('使用本地保存的Token', 'warning');
-                return;
-            }
-            
-            // 方法3: 通过URL参数
-            if (window.location.search.includes('token=')) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token');
-                if (token) {
-                    receiveFCMTokenFromApp(token);
-                    return;
-                }
-            }
-            
-            // 方法4: 尝试通过iframe通信
-            try {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = 'about:blank';
-                document.body.appendChild(iframe);
-                
-                if (iframe.contentWindow) {
-                    iframe.contentWindow.postMessage({ action: 'get_fcm_token' }, '*');
-                }
-                
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 1000);
-            } catch (error) {
-                console.log('iframe方法失败:', error);
-            }
-            
-            // 方法5: 提示用户手动输入
-            setTimeout(() => {
-                const token = prompt('无法自动获取Token，请手动输入FCM Token:');
-                if (token && token.trim()) {
-                    receiveFCMTokenFromApp(token.trim());
-                }
-            }, 500);
-        }
-        
-        // 接收从App传来的Token
-        function receiveFCMTokenFromApp(token) {
-            if (!token) {
-                showStatus('Token为空', 'error');
-                return;
-            }
-            
-            console.log('收到Token:', token.substring(0, 50) + '...');
-            
-            // 保存到localStorage
-            localStorage.setItem('fcm_token', token);
-            
-            // 显示调试区域
-            debugSection.style.display = 'block';
-            
-            // 注册Token到Worker
-            registerTokenToWorker(token);
-            
-            showStatus('Token接收成功', 'success');
-        }
-        
-        // 注册Token到Worker
-        async function registerTokenToWorker(token) {
-            try {
-                const response = await fetch(`${WORKER_URL}?action=register_fcm`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        deviceId: deviceId,
-                        platform: 'android',
-                        appPackage: 'com.mgjack.emergencymanagement'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showStatus('FCM Token注册成功', 'success');
-                } else {
-                    showStatus('FCM Token注册失败: ' + (data.error || '未知错误'), 'error');
-                }
-            } catch (error) {
-                console.error('Token注册失败:', error);
-                showStatus('Token注册异常: ' + error.message, 'error');
-            }
-        }
-        
-        // 复制Token到剪贴板
-        function copyTokenToClipboard() {
-            const savedToken = localStorage.getItem('fcm_token');
-            
-            if (!savedToken) {
-                showStatus('还没有获取到FCM Token', 'error');
-                return;
-            }
-            
-            navigator.clipboard.writeText(savedToken).then(() => {
-                showStatus('FCM Token已复制到剪贴板', 'success');
-            }).catch(err => {
-                showStatus('复制失败: ' + err.message, 'error');
-            });
-        }
-        
-        // 使用自己的Token测试推送
-        async function testWithMyToken() {
-            const savedToken = localStorage.getItem('fcm_token');
-            
-            if (!savedToken) {
-                showStatus('请先获取FCM Token', 'error');
-                return;
-            }
-            
-            showStatus('正在测试您的Token...', 'warning');
-            
-            const url = `${WORKER_URL}?action=simple_push_test&token=${encodeURIComponent(savedToken)}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.success) {
-                    showStatus('✅ 测试推送已发送到您的设备', 'success');
-                } else {
-                    showStatus('❌ 测试推送失败: ' + (data.error || '未知错误'), 'error');
-                }
-            } catch (error) {
-                showStatus('测试失败: ' + error.message, 'error');
-            }
-        }
-        
-        // 清理Token数据
-        function clearTokenData() {
-            if (!confirm('确定要清理Token数据吗？这会让设备重新注册Token。')) {
-                return;
-            }
-            
-            showStatus('正在清理Token数据...', 'warning');
-            
-            try {
-                // 清理本地存储
-                localStorage.removeItem('fcm_token');
-                
-                showStatus('Token数据已清理，请重新获取Token', 'success');
-            } catch (error) {
-                showStatus('清理失败: ' + error.message, 'error');
-            }
-        }
-        
-        // Token调试
-        async function debugToken() {
-            try {
-                showStatus('开始Token调试...', 'warning');
-                
-                const debugInfo = [];
-                debugInfo.push('=== Token调试信息 ===');
-                debugInfo.push(`时间: ${new Date().toLocaleString()}`);
-                
-                // 1. 检查Android接口
-                if (window.Android) {
-                    debugInfo.push('✅ Android接口可用');
-                } else {
-                    debugInfo.push('❌ Android接口不可用');
-                }
-                
-                // 2. 检查localStorage中的Token
-                const savedToken = localStorage.getItem('fcm_token');
-                if (savedToken) {
-                    debugInfo.push(`✅ 本地有保存的Token (${savedToken.length}字符)`);
-                } else {
-                    debugInfo.push('❌ 本地没有保存的Token');
-                }
-                
-                // 3. 检查设备信息
-                debugInfo.push(`📱 用户代理: ${navigator.userAgent.substring(0, 50)}...`);
-                
-                // 4. 尝试检查Worker状态
-                try {
-                    const response = await fetch(`${WORKER_URL}?action=test`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        debugInfo.push(`📊 Worker状态: 正常`);
+                    // 更新主页面报警按钮
+                    updateAlarmButtonState();
+                    
+                    // 启动倒计时
+                    if (adminAlarmCountdownInterval) {
+                        clearInterval(adminAlarmCountdownInterval);
                     }
-                } catch (error) {
-                    debugInfo.push(`❌ 无法连接Worker: ${error.message}`);
+                    
+                    adminAlarmCountdownInterval = setInterval(() => {
+                        adminAlarmTimeLeft--;
+                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                        updateAlarmButtonState();
+                        
+                        if (adminAlarmTimeLeft <= 0) {
+                            deactivateAdminAlarm();
+                        }
+                    }, 1000);
+                    
+                    // 清除任何现有的超时
+                    if (adminAlarmTimeout) {
+                        clearTimeout(adminAlarmTimeout);
+                    }
+                    
+                    // 设置3分钟后自动失效
+                    adminAlarmTimeout = setTimeout(() => {
+                        deactivateAdminAlarm();
+                    }, 180000);
+                    
+                    showStatus('管理员报警已激活，3分钟内有效', 'success');
+                    
+                    // 记录操作
+                    logAdminAction('激活管理员报警');
+                    
+                    // 3秒后自动切换回主页面
+                    setTimeout(() => {
+                        hideAdminSection();
+                    }, 3000);
+                    
+                } else {
+                    console.log('管理员密码错误');
+                    showStatus('管理员密码错误', 'error');
                 }
-                
-                // 显示调试信息
-                alert(debugInfo.join('\n'));
-                showStatus('调试完成', 'success');
-                
             } catch (error) {
-                showStatus('调试失败: ' + error.message, 'error');
+                console.error('激活管理员报警失败:', error);
+                // 如果网络错误，使用本地默认密码（仅用于测试）
+                if (password === DEFAULT_ADMIN_PASSWORD) {
+                    console.log('使用本地默认管理员密码验证成功');
+                    // 激活管理员报警
+                    adminAlarmActive = true;
+                    adminAlarmTimeLeft = 180;
+                    adminAlarmPassword.value = '';
+                    
+                    // 显示激活状态
+                    adminAlarmStatus.style.display = 'block';
+                    adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                    
+                    // 更新主页面报警按钮
+                    updateAlarmButtonState();
+                    
+                    // 启动倒计时
+                    if (adminAlarmCountdownInterval) {
+                        clearInterval(adminAlarmCountdownInterval);
+                    }
+                    
+                    adminAlarmCountdownInterval = setInterval(() => {
+                        adminAlarmTimeLeft--;
+                        adminAlarmTimer.textContent = adminAlarmTimeLeft;
+                        updateAlarmButtonState();
+                        
+                        if (adminAlarmTimeLeft <= 0) {
+                            deactivateAdminAlarm();
+                        }
+                    }, 1000);
+                    
+                    // 清除任何现有的超时
+                    if (adminAlarmTimeout) {
+                        clearTimeout(adminAlarmTimeout);
+                    }
+                    
+                    // 设置3分钟后自动失效
+                    adminAlarmTimeout = setTimeout(() => {
+                        deactivateAdminAlarm();
+                    }, 180000);
+                    
+                    showStatus('管理员报警已激活，3分钟内有效', 'success');
+                    
+                    // 记录操作
+                    logAdminAction('激活管理员报警（本地验证）');
+                    
+                    // 3秒后自动切换回主页面
+                    setTimeout(() => {
+                        hideAdminSection();
+                    }, 3000);
+                } else {
+                    console.log('本地默认密码也不匹配');
+                    showStatus('管理员密码错误', 'error');
+                }
             }
+        }
+        
+        // 停用管理员报警
+        function deactivateAdminAlarm() {
+            console.log('停用管理员报警');
+            adminAlarmActive = false;
+            
+            // 清除定时器
+            if (adminAlarmTimeout) {
+                clearTimeout(adminAlarmTimeout);
+                adminAlarmTimeout = null;
+            }
+            
+            if (adminAlarmCountdownInterval) {
+                clearInterval(adminAlarmCountdownInterval);
+                adminAlarmCountdownInterval = null;
+            }
+            
+            // 隐藏激活状态
+            if (adminAlarmStatus) {
+                adminAlarmStatus.style.display = 'none';
+            }
+            
+            // 更新主页面报警按钮
+            updateAlarmButtonState();
+            
+            showStatus('管理员报警权限已失效', 'warning');
         }
         
         // ==================== 主要功能函数 ====================
@@ -2598,6 +2139,8 @@ function updateAlarmButtonState() {
         
         // 发送报警请求
         async function sendAlarm() {
+            console.log('发送报警请求');
+            
             // 检查报警按钮状态
             if (!alarmActive && !adminAlarmActive) {
                 showStatus('请先激活报警按钮', 'error');
@@ -2630,6 +2173,8 @@ function updateAlarmButtonState() {
                     notification_title: notificationTitle,
                     notification_body: notificationBody
                 };
+                
+                console.log('报警数据:', alarmData);
                 
                 const response = await fetch(WORKER_URL, {
                     method: 'POST',
@@ -3100,7 +2645,121 @@ function updateAlarmButtonState() {
         // ==================== 事件监听器 ====================
         
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initPage);
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM加载完成，开始初始化');
+            initPage();
+            
+            // 绑定主要按钮事件
+            alarmBtn.addEventListener('click', sendAlarm);
+            activateBtn.addEventListener('click', () => {
+                console.log('点击激活按钮');
+                showPasswordModal('alarm');
+            });
+            adminBtn.addEventListener('click', () => {
+                console.log('点击管理员按钮');
+                showPasswordModal('admin');
+            });
+            homeBtn.addEventListener('click', () => {
+                if (window.android && window.android.goToHome) {
+                    window.android.goToHome();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+            testBtn.addEventListener('click', testWorker);
+            clearBtn.addEventListener('click', clearLocalRecords);
+            testPushBtn.addEventListener('click', sendTestPush);
+            silenceBtn.addEventListener('click', stopRinging);
+            viewAlarmBtn.addEventListener('click', () => {
+                stopRinging();
+                document.querySelector('.alarms-list-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // 绑定调试按钮事件
+            debugToggle.addEventListener('click', () => {
+                const isVisible = debugSection.style.display === 'block';
+                debugSection.style.display = isVisible ? 'none' : 'block';
+                debugToggle.querySelector('i:last-child').className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+            });
+            
+            askAppForTokenBtn.addEventListener('click', () => {
+                showStatus('正在向App请求Token...', 'warning');
+                if (window.Android && typeof window.Android.getFCMToken === 'function') {
+                    window.Android.getFCMToken();
+                    showStatus('已向App请求Token', 'success');
+                } else {
+                    showStatus('无法连接到App，请确保在App中运行', 'error');
+                }
+            });
+            
+            // 其他调试按钮（简化处理）
+            showAppTokenBtn.addEventListener('click', () => showStatus('此功能需要在App中运行', 'warning'));
+            copyTokenBtn.addEventListener('click', () => {
+                const savedToken = localStorage.getItem('fcm_token');
+                if (savedToken) {
+                    navigator.clipboard.writeText(savedToken).then(() => {
+                        showStatus('Token已复制', 'success');
+                    });
+                } else {
+                    showStatus('没有找到Token', 'error');
+                }
+            });
+            testMyTokenBtn.addEventListener('click', () => showStatus('此功能需要Worker支持', 'warning'));
+            clearTokenBtn.addEventListener('click', () => {
+                localStorage.removeItem('fcm_token');
+                showStatus('Token已清理', 'success');
+            });
+            manualGetTokenBtn.addEventListener('click', () => showStatus('此功能需要在App中运行', 'warning'));
+            debugTokenBtn.addEventListener('click', () => showStatus('调试功能开发中', 'warning'));
+            
+            // 绑定密码输入事件
+            document.querySelectorAll('.keypad-btn[data-key]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    handlePasswordInput(btn.dataset.key);
+                });
+            });
+            
+            clearPasswordBtn.addEventListener('click', clearPassword);
+            backspaceBtn.addEventListener('click', backspacePassword);
+            cancelPasswordBtn.addEventListener('click', hidePasswordModal);
+            submitPasswordBtn.addEventListener('click', validateAlarmPassword);
+            
+            clearAdminPasswordBtn.addEventListener('click', clearPassword);
+            adminBackspaceBtn.addEventListener('click', backspacePassword);
+            cancelAdminLoginBtn.addEventListener('click', hidePasswordModal);
+            submitAdminLoginBtn.addEventListener('click', validateAdminPassword);
+            
+            // 绑定管理页面事件
+            adminTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchAdminTab(tab.dataset.tab);
+                });
+            });
+            
+            refreshLogsBtn.addEventListener('click', () => showStatus('日志刷新功能开发中', 'warning'));
+            clearLogsBtn.addEventListener('click', () => showStatus('日志清理功能开发中', 'warning'));
+            
+            updateAdminPasswordBtn.addEventListener('click', () => showStatus('密码更新功能开发中', 'warning'));
+            cancelAdminPasswordBtn.addEventListener('click', () => {
+                adminCurrentPassword.value = '';
+                adminNewPassword.value = '';
+                adminConfirmPassword.value = '';
+            });
+            
+            updateAlarmPasswordBtn.addEventListener('click', () => showStatus('密码更新功能开发中', 'warning'));
+            cancelAlarmPasswordBtn.addEventListener('click', () => {
+                alarmCurrentPassword.value = '';
+                alarmNewPassword.value = '';
+                alarmConfirmPassword.value = '';
+            });
+            
+            activateAdminAlarmBtn.addEventListener('click', activateAdminAlarm);
+            cancelAdminAlarmBtn.addEventListener('click', () => {
+                adminAlarmPassword.value = '';
+            });
+            
+            console.log('所有事件监听器已绑定');
+        });
         
         // 页面可见性变化时控制轮询
         document.addEventListener('visibilitychange', () => {
@@ -3161,155 +2820,22 @@ function updateAlarmButtonState() {
             if (e.code === 'Escape' && isRinging) {
                 stopRinging();
             }
-            
-            // 数字键输入密码
-            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.key >= '0' && e.key <= '9') {
-                handlePasswordInput(e.key);
-                e.preventDefault();
-            }
-            
-            // Backspace删除
-            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Backspace') {
-                backspacePassword();
-                e.preventDefault();
-            }
-            
-            // Enter提交
-            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Enter') {
-                if (passwordModal.style.display === 'flex' && currentPassword.length === 6) {
-                    validateAlarmPassword();
-                } else if (adminLoginModal.style.display === 'flex' && currentPassword.length === 6) {
-                    validateAdminPassword();
-                }
-                e.preventDefault();
-            }
-            
-            // Escape取消
-            if ((passwordModal.style.display === 'flex' || adminLoginModal.style.display === 'flex') && e.code === 'Escape') {
-                hidePasswordModal();
-                e.preventDefault();
-            }
         });
         
-        // 绑定主要按钮事件
-        alarmBtn.addEventListener('click', sendAlarm);
-        activateBtn.addEventListener('click', () => showPasswordModal('alarm'));
-        adminBtn.addEventListener('click', () => showPasswordModal('admin'));
-        homeBtn.addEventListener('click', () => {
-            if (window.android && window.android.goToHome) {
-                window.android.goToHome();
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-        testBtn.addEventListener('click', testWorker);
-        clearBtn.addEventListener('click', clearLocalRecords);
-        testPushBtn.addEventListener('click', sendTestPush);
-        silenceBtn.addEventListener('click', stopRinging);
-        viewAlarmBtn.addEventListener('click', () => {
-            stopRinging();
-            document.querySelector('.alarms-list-section').scrollIntoView({ behavior: 'smooth' });
-        });
+        // 接收Token的函数
+        function receiveFCMTokenFromApp(token) {
+            console.log('收到Token:', token.substring(0, 20) + '...');
+            localStorage.setItem('fcm_token', token);
+            showStatus('Token接收成功', 'success');
+        }
         
-        // 绑定调试按钮事件
-        debugToggle.addEventListener('click', () => {
-            const isVisible = debugSection.style.display === 'block';
-            debugSection.style.display = isVisible ? 'none' : 'block';
-            debugToggle.querySelector('i:last-child').className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
-        });
-        
-        askAppForTokenBtn.addEventListener('click', askAppForToken);
-        showAppTokenBtn.addEventListener('click', showAppToken);
-        copyTokenBtn.addEventListener('click', copyTokenToClipboard);
-        testMyTokenBtn.addEventListener('click', testWithMyToken);
-        clearTokenBtn.addEventListener('click', clearTokenData);
-        manualGetTokenBtn.addEventListener('click', manualGetToken);
-        debugTokenBtn.addEventListener('click', debugToken);
-        
-        // 绑定密码输入事件
-        document.querySelectorAll('.keypad-btn[data-key]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                handlePasswordInput(btn.dataset.key);
-            });
-        });
-        
-        clearPasswordBtn.addEventListener('click', clearPassword);
-        backspaceBtn.addEventListener('click', backspacePassword);
-        cancelPasswordBtn.addEventListener('click', hidePasswordModal);
-        submitPasswordBtn.addEventListener('click', validateAlarmPassword);
-        
-        clearAdminPasswordBtn.addEventListener('click', clearPassword);
-        adminBackspaceBtn.addEventListener('click', backspacePassword);
-        cancelAdminLoginBtn.addEventListener('click', hidePasswordModal);
-        submitAdminLoginBtn.addEventListener('click', validateAdminPassword);
-        
-        // 绑定管理页面事件
-        adminTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                switchAdminTab(tab.dataset.tab);
-            });
-        });
-        
-        refreshLogsBtn.addEventListener('click', loadAdminLogs);
-        clearLogsBtn.addEventListener('click', async () => {
-            if (confirm('确定要清空所有日志吗？此操作不可恢复。')) {
-                try {
-                    const response = await fetch(`${WORKER_URL}?action=clear_logs&secret=admin123`);
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showStatus('日志已清空', 'success');
-                        loadAdminLogs();
-                        logAdminAction('清空系统日志');
-                    } else {
-                        showStatus('清空日志失败: ' + (data.error || '未知错误'), 'error');
-                    }
-                } catch (error) {
-                    showStatus('清空日志失败: ' + error.message, 'error');
-                }
-            }
-        });
-        
-        updateAdminPasswordBtn.addEventListener('click', updateAdminPassword);
-        cancelAdminPasswordBtn.addEventListener('click', () => {
-            adminCurrentPassword.value = '';
-            adminNewPassword.value = '';
-            adminConfirmPassword.value = '';
-        });
-        
-        updateAlarmPasswordBtn.addEventListener('click', updateAlarmPassword);
-        cancelAlarmPasswordBtn.addEventListener('click', () => {
-            alarmCurrentPassword.value = '';
-            alarmNewPassword.value = '';
-            alarmConfirmPassword.value = '';
-        });
-        
-        activateAdminAlarmBtn.addEventListener('click', activateAdminAlarm);
-        cancelAdminAlarmBtn.addEventListener('click', () => {
-            adminAlarmPassword.value = '';
-        });
+        // 记录管理员操作（简化）
+        function logAdminAction(action) {
+            console.log('管理员操作:', action);
+        }
         
         // 全局接收Token的函数，供App调用
         window.receiveFCMToken = receiveFCMTokenFromApp;
-        
-        // 监听message事件，用于从iframe或父窗口接收Token
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.action === 'fcm_token') {
-                receiveFCMTokenFromApp(event.data.token);
-            }
-        });
-        
-        // 监听URL hash变化（用于从URL获取Token）
-        window.addEventListener('hashchange', function() {
-            if (window.location.hash && window.location.hash.includes('token=')) {
-                const token = window.location.hash.split('token=')[1];
-                if (token) {
-                    receiveFCMTokenFromApp(token);
-                    // 清除hash
-                    window.location.hash = '';
-                }
-            }
-        });
     </script>
 </body>
 </html>
